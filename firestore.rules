@@ -1,0 +1,89 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Helper Primitives
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function incoming() {
+      return request.resource.data;
+    }
+    
+    function existing() {
+      return resource.data;
+    }
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // User Profile Validation
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email'])
+        && data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'phone', 'district', 'areaUpazila', 'fullAddress', 'createdAt', 'updatedAt'])
+        && data.uid is string && data.uid.size() <= 128
+        && data.email is string && data.email.size() <= 256
+        && (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 128))
+        && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 512))
+        && (!('phone' in data) || (data.phone is string && data.phone.size() <= 32))
+        && (!('district' in data) || (data.district is string && data.district.size() <= 64))
+        && (!('areaUpazila' in data) || (data.areaUpazila is string && data.areaUpazila.size() <= 128))
+        && (!('fullAddress' in data) || (data.fullAddress is string && data.fullAddress.size() <= 512))
+        && (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64))
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    // Order Validation
+    function isValidOrder(data) {
+      return data.keys().hasAll(['id', 'userId', 'customerName', 'customerPhone', 'total', 'status'])
+        && data.keys().hasOnly(['id', 'userId', 'customerName', 'customerPhone', 'district', 'areaUpazila', 'fullAddress', 'note', 'items', 'paidBottlesTotal', 'freeBottlesTotal', 'totalPaidMl', 'subtotal', 'deliveryFee', 'total', 'paymentMethod', 'status', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id.size() <= 128
+        && data.userId is string && data.userId.size() <= 128
+        && data.customerName is string && data.customerName.size() <= 128
+        && data.customerPhone is string && data.customerPhone.size() <= 32
+        && data.total is number
+        && data.status is string && data.status.size() <= 32
+        && (!('district' in data) || (data.district is string && data.district.size() <= 64))
+        && (!('areaUpazila' in data) || (data.areaUpazila is string && data.areaUpazila.size() <= 128))
+        && (!('fullAddress' in data) || (data.fullAddress is string && data.fullAddress.size() <= 512))
+        && (!('note' in data) || (data.note is string && data.note.size() <= 512))
+        && (!('items' in data) || data.items is list)
+        && (!('paidBottlesTotal' in data) || data.paidBottlesTotal is number)
+        && (!('freeBottlesTotal' in data) || data.freeBottlesTotal is number)
+        && (!('totalPaidMl' in data) || data.totalPaidMl is number)
+        && (!('subtotal' in data) || data.subtotal is number)
+        && (!('deliveryFee' in data) || data.deliveryFee is number)
+        && (!('paymentMethod' in data) || (data.paymentMethod is string && data.paymentMethod.size() <= 64))
+        && (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64))
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    // Catch-all Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUser(incoming()) && incoming().uid == request.auth.uid;
+      allow update: if isOwner(userId) && isValidId(userId) && isValidUser(incoming()) && incoming().uid == existing().uid;
+      allow delete: if false;
+
+      // User Order subcollection
+      match /orders/{orderId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(orderId) && isValidOrder(incoming()) && incoming().userId == request.auth.uid;
+        allow update: if isOwner(userId) && isValidId(orderId) && isValidOrder(incoming()) && incoming().userId == existing().userId;
+        allow delete: if false;
+      }
+    }
+  }
+}

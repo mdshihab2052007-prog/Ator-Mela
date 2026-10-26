@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --ink: #120E0B;
+    --smoke: #1E1814;
+    --smoke-light: #2A221C;
+    --parchment: #F3EBDD;
+    --brass: #C9A25A;
+    --brass-light: #E6C98A;
+    --brass-dark: #967431;
+    --muted: #A89A86;
+    --amber-accent: #B8741A;
+    --garnet-accent: #6E1423;
+    --champagne-accent: #D9B865;
+  }
+
+  body {
+    font-family: 'Hind Siliguri', 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--ink);
+    color: var(--parchment);
+    overflow-x: hidden;
+  }
+}
+
+.font-cormorant {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.font-tiro {
+  font-family: 'Tiro Bangla', serif;
+}
+
+.font-manrope {
+  font-family: 'Manrope', sans-serif;
+}
+
+.font-hind {
+  font-family: 'Hind Siliguri', sans-serif;
+}
+
+/* Subtle luxury noise texture */
+.bg-noise {
+  background-image: radial-gradient(rgba(201, 162, 90, 0.04) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Brass hairline border */
+.border-brass-hairline {
+  border-color: rgba(201, 162, 90, 0.25);
+}
+
+.border-brass-glow {
+  box-shadow: 0 0 15px -3px rgba(201, 162, 90, 0.25);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #120E0B;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A221C;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C9A25A;
+}
+
+/* Custom luxury animations */
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 12s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(201, 162, 90, 0.1) 0%, rgba(230, 201, 138, 0.4) 50%, rgba(201, 162, 90, 0.1) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite;
+}
+
+@keyframes floatSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float-subtle {
+  animation: floatSubtle 4s ease-in-out infinite;
+}

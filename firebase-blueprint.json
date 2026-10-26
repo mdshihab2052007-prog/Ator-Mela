@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User account profile data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "photoURL": { "type": "string", "maxLength": 512 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "district": { "type": "string", "maxLength": 64 },
+        "areaUpazila": { "type": "string", "maxLength": 128 },
+        "fullAddress": { "type": "string", "maxLength": 512 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["uid", "email"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Order history for user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "customerName": { "type": "string", "maxLength": 128 },
+        "customerPhone": { "type": "string", "maxLength": 32 },
+        "district": { "type": "string", "maxLength": 64 },
+        "areaUpazila": { "type": "string", "maxLength": 128 },
+        "fullAddress": { "type": "string", "maxLength": 512 },
+        "note": { "type": "string", "maxLength": 512 },
+        "items": { "type": "array" },
+        "paidBottlesTotal": { "type": "number" },
+        "freeBottlesTotal": { "type": "number" },
+        "totalPaidMl": { "type": "number" },
+        "subtotal": { "type": "number" },
+        "deliveryFee": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "maxLength": 32 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "userId", "customerName", "customerPhone", "total", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile data stored under their authentication UID"
+    },
+    "/users/{userId}/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Orders created by user"
+    }
+  }
+}
