@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { getFirestore, doc, getDocFromServer, enableNetwork } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
@@ -54,7 +54,42 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
+async function ensureCleanAuthSession() {
+  if (typeof window === 'undefined') return;
+  try {
+    if (typeof auth.authStateReady === 'function') {
+      await auth.authStateReady();
+    }
+    if (auth.currentUser) {
+      try {
+        await auth.currentUser.getIdToken();
+      } catch (tokenErr: any) {
+        if (
+          tokenErr?.message?.includes('token-service-api') ||
+          tokenErr?.code === 'auth/internal-error' ||
+          tokenErr?.message?.includes('disabled')
+        ) {
+          console.warn('Auth token service is not enabled on this GCP project. Clearing session to unblock Firestore.');
+          await auth.signOut();
+          try {
+            if (typeof indexedDB !== 'undefined') {
+              indexedDB.deleteDatabase('firebaseLocalStorageDb');
+            }
+            if (typeof localStorage !== 'undefined') {
+              Object.keys(localStorage).forEach((k) => {
+                if (k.startsWith('firebase:authUser:')) localStorage.removeItem(k);
+              });
+            }
+          } catch {}
+          await enableNetwork(db);
+        }
+      }
+    }
+  } catch {}
+}
+
 async function testConnection() {
+  await ensureCleanAuthSession();
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {

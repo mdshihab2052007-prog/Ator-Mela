@@ -75,6 +75,8 @@ export const AuthModal: React.FC = () => {
       console.error(err);
       if (err.code === 'auth/email-already-in-use') {
         setErrorMsg(lang === 'bn' ? 'এই ইমেইলটি ইতিমধ্যে নিবন্ধিত।' : 'This email is already registered.');
+      } else if (err?.message?.includes('token-service-api') || err?.message?.includes('securetoken')) {
+        setErrorMsg(lang === 'bn' ? 'Firebase Authentication API প্রস্তুত হচ্ছে। আপনি লগইন ছাড়াই সরাসরি অর্ডার করতে পারবেন।' : 'Firebase Token Service API is initializing on your cloud project. You can order directly without login.');
       } else {
         setErrorMsg(err.message || (lang === 'bn' ? 'অ্যাকাউন্ট তৈরি করা যায়নি।' : 'Failed to create account.'));
       }
@@ -104,6 +106,8 @@ export const AuthModal: React.FC = () => {
       console.error(err);
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         setErrorMsg(lang === 'bn' ? 'ভুল ইমেইল বা পাসওয়ার্ড।' : 'Invalid email or password.');
+      } else if (err?.message?.includes('token-service-api') || err?.message?.includes('securetoken')) {
+        setErrorMsg(lang === 'bn' ? 'Firebase Authentication API প্রস্তুত হচ্ছে। আপনি লগইন ছাড়াই সরাসরি অর্ডার করতে পারবেন।' : 'Firebase Token Service API is initializing on your cloud project. You can order directly without login.');
       } else {
         setErrorMsg(err.message || (lang === 'bn' ? 'লগইন ব্যর্থ হয়েছে।' : 'Login failed.'));
       }
@@ -124,7 +128,11 @@ export const AuthModal: React.FC = () => {
       }, 1000);
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || (lang === 'bn' ? 'Google সাইন ইন ব্যর্থ হয়েছে।' : 'Google Sign-In failed.'));
+      if (err?.message?.includes('token-service-api') || err?.message?.includes('securetoken')) {
+        setErrorMsg(lang === 'bn' ? 'Firebase Authentication API প্রস্তুত হচ্ছে। আপনি লগইন ছাড়াই সরাসরি ক্যাশ অন ডেলিভারিতে অর্ডার করতে পারেন।' : 'Firebase Token Service API is initializing. You can place your order directly via Cash on Delivery.');
+      } else {
+        setErrorMsg(err.message || (lang === 'bn' ? 'Google সাইন ইন ব্যর্থ হয়েছে।' : 'Google Sign-In failed.'));
+      }
     } finally {
       setIsSubmitting(false);
     }

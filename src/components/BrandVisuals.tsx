@@ -260,7 +260,7 @@ export const LuxuryBottle: React.FC<{
           textAnchor="middle"
           fill="#F3EBDD"
           fontSize="9"
-          fontFamily="'Cormorant Garamond', serif"
+          fontFamily="'Hind Siliguri', sans-serif"
           fontWeight="700"
           letterSpacing="0.8"
         >
@@ -272,7 +272,7 @@ export const LuxuryBottle: React.FC<{
           textAnchor="middle"
           fill="#C9A25A"
           fontSize="7"
-          fontFamily="'Manrope', sans-serif"
+          fontFamily="'Hind Siliguri', sans-serif"
           fontWeight="600"
           letterSpacing="0.5"
         >
@@ -284,7 +284,8 @@ export const LuxuryBottle: React.FC<{
           textAnchor="middle"
           fill="#A89A86"
           fontSize="5"
-          fontFamily="'Manrope', sans-serif"
+          fontFamily="'Hind Siliguri', sans-serif"
+          fontWeight="600"
           letterSpacing="1"
         >
           ATOR MELA

@@ -778,6 +778,13 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         </tr>
                       );
                     })}
+                    {filteredOrders.length === 0 && (
+                      <tr>
+                        <td colSpan={8} className="py-12 text-center text-xs text-gray-500">
+                          বর্তমানে কোনো অর্ডার নেই। নতুন অর্ডার আসলে এখানে স্বয়ংক্রিয়ভাবে প্রদর্শিত হবে।
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1094,6 +1101,11 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </div>
               ))}
             </div>
+            {reviews.length === 0 && (
+              <div className="bg-white p-8 rounded-xl border border-gray-200 text-center text-xs text-gray-500">
+                বর্তমানে কোনো গ্রাহক রিভিউ জমা পড়েনি। আসল গ্রাহকদের রিভিউ আসলে এখানে প্রদর্শিত হবে।
+              </div>
+            )}
           </div>
         )}
 

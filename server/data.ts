@@ -120,7 +120,7 @@ export const initialOffer: Offer = {
   buy_qty: 2,
   free_qty: 1,
   buyer_limit: 50,
-  claimed_count: 32,
+  claimed_count: 0,
   per_phone_limit: 1,
   start_date: '2026-10-01',
   end_date: '2026-12-31',
@@ -175,7 +175,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-2', 'faq-6', 'faq-5'],
     action: 'order',
     sort_order: 1,
-    views: 142,
+    views: 0,
     active: true,
   },
   {
@@ -192,7 +192,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-3', 'faq-4', 'faq-1'],
     action: 'order',
     sort_order: 2,
-    views: 118,
+    views: 0,
     active: true,
   },
   {
@@ -209,7 +209,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-2', 'faq-5'],
     action: 'none',
     sort_order: 3,
-    views: 64,
+    views: 0,
     active: true,
   },
   {
@@ -226,7 +226,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-2', 'faq-1'],
     action: 'none',
     sort_order: 4,
-    views: 45,
+    views: 0,
     active: true,
   },
   {
@@ -243,7 +243,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-1', 'faq-6'],
     action: 'none',
     sort_order: 5,
-    views: 52,
+    views: 0,
     active: true,
   },
   {
@@ -260,7 +260,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-1', 'faq-2'],
     action: 'order',
     sort_order: 6,
-    views: 89,
+    views: 0,
     active: true,
   },
 
@@ -277,7 +277,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-7', 'faq-8', 'faq-9'],
     action: 'none',
     sort_order: 6,
-    views: 189,
+    views: 0,
     active: true,
   },
   {
@@ -292,7 +292,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-6', 'faq-8'],
     action: 'none',
     sort_order: 7,
-    views: 133,
+    views: 0,
     active: true,
   },
   {
@@ -309,7 +309,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-9', 'faq-10'],
     action: 'none',
     sort_order: 8,
-    views: 97,
+    views: 0,
     active: true,
   },
   {
@@ -326,7 +326,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-10', 'faq-6'],
     action: 'none',
     sort_order: 9,
-    views: 110,
+    views: 0,
     active: true,
   },
   {
@@ -341,7 +341,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-8', 'faq-9'],
     action: 'none',
     sort_order: 10,
-    views: 68,
+    views: 0,
     active: true,
   },
 
@@ -360,7 +360,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-vampire', 'faq-aroosah', 'faq-ehsas'],
     action: 'none',
     sort_order: 11,
-    views: 176,
+    views: 0,
     active: true,
   },
   {
@@ -377,7 +377,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-11', 'faq-12'],
     action: 'order',
     sort_order: 11.1,
-    views: 140,
+    views: 0,
     active: true,
   },
   {
@@ -394,7 +394,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-11', 'faq-12'],
     action: 'order',
     sort_order: 11.2,
-    views: 125,
+    views: 0,
     active: true,
   },
   {
@@ -411,7 +411,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-11', 'faq-12'],
     action: 'order',
     sort_order: 11.3,
-    views: 135,
+    views: 0,
     active: true,
   },
   {
@@ -428,7 +428,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-13', 'faq-15'],
     action: 'none',
     sort_order: 12,
-    views: 154,
+    views: 0,
     active: true,
   },
   {
@@ -445,7 +445,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-12', 'faq-15'],
     action: 'none',
     sort_order: 13,
-    views: 89,
+    views: 0,
     active: true,
   },
   {
@@ -462,7 +462,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-11', 'faq-12'],
     action: 'none',
     sort_order: 14,
-    views: 73,
+    views: 0,
     active: true,
   },
   {
@@ -479,7 +479,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-12', 'faq-13'],
     action: 'none',
     sort_order: 15,
-    views: 58,
+    views: 0,
     active: true,
   },
   {
@@ -496,7 +496,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-1', 'faq-6'],
     action: 'none',
     sort_order: 16,
-    views: 42,
+    views: 0,
     active: true,
   },
 
@@ -515,7 +515,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-9', 'faq-10', 'faq-21'],
     action: 'order',
     sort_order: 17,
-    views: 121,
+    views: 0,
     active: true,
   },
   {
@@ -532,7 +532,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-19', 'faq-21'],
     action: 'whatsapp',
     sort_order: 18,
-    views: 82,
+    views: 0,
     active: true,
   },
   {
@@ -549,7 +549,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-21', 'faq-10'],
     action: 'call',
     sort_order: 19,
-    views: 49,
+    views: 0,
     active: true,
   },
   {
@@ -566,7 +566,7 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-17', 'faq-21'],
     action: 'none',
     sort_order: 20,
-    views: 37,
+    views: 0,
     active: true,
   },
   {
@@ -581,52 +581,12 @@ export const initialFAQs: FAQItem[] = [
     related_ids: ['faq-17', 'faq-18'],
     action: 'whatsapp',
     sort_order: 21,
-    views: 165,
+    views: 0,
     active: true,
   },
 ];
 
-export const initialReviews: Review[] = [
-  {
-    id: 'rev-1',
-    customer_name: 'তানভীর আহমেদ',
-    area: 'বোয়ালিয়া, রাজশাহী',
-    rating: 5,
-    text_bn:
-      'এহসাস আল আরাবিয়ার ঘ্রাণটা সত্যি অসাধারণ! জুমার দিনে ব্যবহার করে মসজিদে গিয়েছিলাম, ২ জন জিজ্ঞেস করেছে কোথায় পেয়েছি। আতর মেলাকে ধন্যবাদ।',
-    text_en:
-      'Ehsas Al Arabia is truly extraordinary! Wore it to Jumuah prayers, two people asked where I got it.',
-    attar_name: 'Ehsas Al Arabia',
-    approved: true,
-    created_at: '2026-10-20T14:30:00Z',
-  },
-  {
-    id: 'rev-2',
-    customer_name: 'রাশেদ খান',
-    area: 'শিবগঞ্জ, চাঁপাইনবাবগঞ্জ',
-    rating: 5,
-    text_bn:
-      'ভ্যাম্পায়ার ব্লাড আতরটা একদম আলাদা। মিষ্টি অথচ খুব গভীর একটা ঘ্রাণ। আর ২ বোতল কিনে ১ বোতল ফ্রি পেয়েছি, সাথে ফ্রি ডেলিভারি!',
-    text_en:
-      'Vampire Blood is so unique. Sweet yet deep. Got the 2+1 free bottle deal with free delivery!',
-    attar_name: 'Vampire Blood',
-    approved: true,
-    created_at: '2026-10-22T10:15:00Z',
-  },
-  {
-    id: 'rev-3',
-    customer_name: 'নুসরাত জাহান',
-    area: 'মতিহার, রাজশাহী',
-    rating: 5,
-    text_bn:
-      'আরুসা আতরটা খুবই কোমল ও স্নিগ্ধ। একদম মাথা ধরে না, সারাদিন কাপড়ে মিষ্টি গোলাপ ও জুঁইয়ের একটা আভা পাওয়া যায়।',
-    text_en:
-      'Aroosah is so gentle and radiant. Never gives a headache, leaves a lovely floral aura all day.',
-    attar_name: 'Aroosah',
-    approved: true,
-    created_at: '2026-10-23T18:40:00Z',
-  },
-];
+export const initialReviews: Review[] = [];
 
 export const initialSiteSettings: SiteSettings = {
   brand_name_bn: 'আতর মেলা',
@@ -638,9 +598,9 @@ export const initialSiteSettings: SiteSettings = {
   fb_page_url: 'https://www.facebook.com/share/1F2jSKW9VL/',
   admin_emails: ['faysalahmad687@gmail.com'],
   announcement_bn:
-    '৬ মিলি কিনলে ৩ মিলি ফ্রি · প্রথম ৫০ জন · ৩২/৫০ নেওয়া হয়েছে · ১০ মিলি বা তার বেশি নিলে ডেলিভারি ফ্রি',
+    '৬ মিলি কিনলে ৩ মিলি ফ্রি · প্রথম ৫০ জনের জন্য বিশেষ অফার · ০/৫০ বুকিং হয়েছে · ১০ মিলি বা তার বেশি নিলে ডেলিভারি ফ্রি',
   announcement_en:
-    'Buy 6 mL Get 3 mL Free · First 50 Buyers · 32/50 Claimed · Free Delivery on 10 mL or more',
+    'Buy 6 mL Get 3 mL Free · First 50 Buyers Special · 0/50 Claimed · Free Delivery on 10 mL or more',
   meta_pixel_id: '',
   ga4_id: '',
   maintenance_mode: false,
@@ -669,130 +629,5 @@ export const initialSiteSettings: SiteSettings = {
   ],
 };
 
-export const initialOrders: Order[] = [
-  {
-    id: 'AM-261023-0101',
-    created_at: '2026-10-23T11:20:00Z',
-    customer_name: 'মাহমুদুল হাসান',
-    customer_phone: '01712345678',
-    district: 'Rajshahi',
-    area_upazila: 'বোয়ালিয়া',
-    full_address: 'বাড়ি #৪৫, সাগরপাড়া, বোয়ালিয়া, রাজশাহী',
-    note: 'সন্ধ্যার পর ডেলিভারি দিলে ভালো হয়',
-    items: [
-      {
-        product_id: 'prod-ehsas',
-        product_name_bn: 'এহসাস আল আরাবিয়া',
-        product_name_en: 'Ehsas Al Arabia',
-        paid_bottles: 2,
-        free_bottles: 1,
-        unit_price: 129,
-        total_price: 258,
-        bottle_ml: 3,
-        accent_hex: '#B8741A',
-      },
-    ],
-    paid_bottles_total: 2,
-    free_bottles_total: 1,
-    total_paid_ml: 6,
-    subtotal: 258,
-    delivery_fee: 30,
-    total: 288,
-    payment_method: 'cash_on_delivery',
-    status: 'delivered',
-    courier_name: 'লোকাল ডেলিভারিম্যান',
-    tracking_id: 'RD-9821',
-    status_history: [
-      { status: 'new', timestamp: '2026-10-23T11:20:00Z', by: 'Customer' },
-      { status: 'confirmed', timestamp: '2026-10-23T11:30:00Z', by: 'faysalahmad687@gmail.com' },
-      { status: 'packed', timestamp: '2026-10-23T13:00:00Z', by: 'faysalahmad687@gmail.com' },
-      { status: 'shipped', timestamp: '2026-10-23T15:00:00Z', by: 'faysalahmad687@gmail.com' },
-      { status: 'delivered', timestamp: '2026-10-24T17:45:00Z', by: 'faysalahmad687@gmail.com' },
-    ],
-    offer_slot_claimed: true,
-  },
-  {
-    id: 'AM-261024-0102',
-    created_at: '2026-10-24T14:10:00Z',
-    customer_name: 'ফারুক হোসেন',
-    customer_phone: '01898765432',
-    district: 'Chapai Nawabganj',
-    area_upazila: 'সদর',
-    full_address: 'শান্তিমোড়, বটতলা রোড, চাঁপাইনবাবগঞ্জ সদর',
-    items: [
-      {
-        product_id: 'prod-vampire',
-        product_name_bn: 'ভ্যাম্পায়ার ব্লাড',
-        product_name_en: 'Vampire Blood',
-        paid_bottles: 2,
-        free_bottles: 1,
-        unit_price: 129,
-        total_price: 258,
-        bottle_ml: 3,
-        accent_hex: '#6E1423',
-      },
-      {
-        product_id: 'prod-aroosah',
-        product_name_bn: 'আরুসা',
-        product_name_en: 'Aroosah',
-        paid_bottles: 2,
-        free_bottles: 1,
-        unit_price: 129,
-        total_price: 258,
-        bottle_ml: 3,
-        accent_hex: '#D9B865',
-      },
-    ],
-    paid_bottles_total: 4,
-    free_bottles_total: 2,
-    total_paid_ml: 12,
-    subtotal: 516,
-    delivery_fee: 0,
-    total: 516,
-    payment_method: 'cash_on_delivery',
-    status: 'shipped',
-    courier_name: 'সুন্দরবন কুরিয়ার',
-    tracking_id: 'SB-884210',
-    status_history: [
-      { status: 'new', timestamp: '2026-10-24T14:10:00Z', by: 'Customer' },
-      { status: 'confirmed', timestamp: '2026-10-24T14:25:00Z', by: 'faysalahmad687@gmail.com' },
-      { status: 'packed', timestamp: '2026-10-24T16:00:00Z', by: 'faysalahmad687@gmail.com' },
-      { status: 'shipped', timestamp: '2026-10-25T08:30:00Z', by: 'faysalahmad687@gmail.com' },
-    ],
-    offer_slot_claimed: true,
-  },
-  {
-    id: 'AM-261025-0103',
-    created_at: '2026-10-25T08:45:00Z',
-    customer_name: 'মো. শাহিনুর রহমান',
-    customer_phone: '01643249999',
-    district: 'Rajshahi',
-    area_upazila: 'মতিহার',
-    full_address: 'কাজলা গেট, রাজশাহী বিশ্ববিদ্যালয় সংলগ্ন, মতিহার',
-    items: [
-      {
-        product_id: 'prod-ehsas',
-        product_name_bn: 'এহসাস আল আরাবিয়া',
-        product_name_en: 'Ehsas Al Arabia',
-        paid_bottles: 1,
-        free_bottles: 0,
-        unit_price: 129,
-        total_price: 129,
-        bottle_ml: 3,
-        accent_hex: '#B8741A',
-      },
-    ],
-    paid_bottles_total: 1,
-    free_bottles_total: 0,
-    total_paid_ml: 3,
-    subtotal: 129,
-    delivery_fee: 30,
-    total: 159,
-    payment_method: 'cash_on_delivery',
-    status: 'new',
-    status_history: [
-      { status: 'new', timestamp: '2026-10-25T08:45:00Z', by: 'Customer' },
-    ],
-    offer_slot_claimed: false,
-  },
-];
+export const initialOrders: Order[] = [];
+

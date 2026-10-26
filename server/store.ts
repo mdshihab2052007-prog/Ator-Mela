@@ -30,7 +30,7 @@ class Store {
   private reviews: Review[] = [...initialReviews];
   private settings: SiteSettings = { ...initialSiteSettings };
   private unansweredQuestions: UnansweredQuestion[] = [];
-  private orderSequence = 104;
+  private orderSequence = 1;
 
   // Rate-limiting tracking: timestamp of recent orders by phone or IP
   private recentOrdersByPhone = new Map<string, number[]>();

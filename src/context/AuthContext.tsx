@@ -93,8 +93,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Sync user profile document upon auth state change
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
       if (currentUser) {
+        // Validate token service availability before calling Firestore
+        try {
+          await currentUser.getIdToken();
+        } catch (tokenErr: any) {
+          if (
+            tokenErr?.message?.includes('token-service-api') ||
+            tokenErr?.code === 'auth/internal-error' ||
+            tokenErr?.message?.includes('disabled')
+          ) {
+            console.warn('Auth token service is not enabled for this GCP project. Clearing session to unblock Firestore.');
+            await signOut(auth);
+            setUser(null);
+            setUserProfile(null);
+            setLoading(false);
+            return;
+          }
+        }
+        setUser(currentUser);
         const userDocRef = doc(db, 'users', currentUser.uid);
         const userPath = `users/${currentUser.uid}`;
         try {
@@ -115,8 +132,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             await setDoc(userDocRef, newProfile);
             setUserProfile(newProfile);
           }
-        } catch (err) {
-          handleFirestoreError(err, OperationType.GET, userPath);
+        } catch (err: any) {
+          if (err?.code === 'permission-denied' || err?.message?.includes('insufficient permissions')) {
+            handleFirestoreError(err, OperationType.GET, userPath);
+          } else {
+            console.warn('Firestore user profile offline/connectivity notice:', err?.message || err);
+            setUserProfile({
+              uid: currentUser.uid,
+              email: currentUser.email || '',
+              displayName: currentUser.displayName || currentUser.email?.split('@')[0] || 'User',
+              photoURL: currentUser.photoURL || '',
+            });
+          }
         }
       } else {
         setUserProfile(null);
@@ -151,7 +178,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUserOrders(ordersList);
       },
       (error) => {
-        handleFirestoreError(error, OperationType.GET, ordersPath);
+        if (error.code === 'permission-denied' || error.message?.includes('insufficient permissions')) {
+          handleFirestoreError(error, OperationType.GET, ordersPath);
+        } else {
+          console.warn('Firestore orders sync offline/connectivity notice:', error.message);
+        }
       }
     );
 
