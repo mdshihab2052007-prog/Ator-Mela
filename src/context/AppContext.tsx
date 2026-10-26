@@ -12,6 +12,14 @@ import {
   Order,
   FAQCategory,
 } from '../shared/types.ts';
+import {
+  initialProducts,
+  initialOffer,
+  initialDeliverySettings,
+  initialFAQs,
+  initialReviews,
+  initialSiteSettings,
+} from '../shared/catalogData.ts';
 
 interface AppContextType {
   lang: Language;
@@ -75,13 +83,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved === 'en' ? 'en' : 'bn';
   });
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [offer, setOffer] = useState<Offer | null>(null);
-  const [deliverySettings, setDeliverySettings] = useState<DeliverySettings | null>(null);
-  const [faqs, setFaqs] = useState<FAQItem[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize with bundled catalog data so Vercel static deployments immediately show whirl and products
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [offer, setOffer] = useState<Offer | null>(initialOffer);
+  const [deliverySettings, setDeliverySettings] = useState<DeliverySettings | null>(initialDeliverySettings);
+  const [faqs, setFaqs] = useState<FAQItem[]>(initialFAQs);
+  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+  const [settings, setSettings] = useState<SiteSettings | null>(initialSiteSettings);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Cart state stored in localStorage
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -149,20 +158,122 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const computeLocalCartCalculation = useCallback(
+    (cartItems: CartItem[]): CartCalculation => {
+      const isOfferActive = Boolean(offer && offer.active && offer.claimed_count < offer.buyer_limit);
+      let totalPaidBottles = 0;
+      let totalFreeBottles = 0;
+      let totalPaidMl = 0;
+      let subtotal = 0;
+
+      const items = cartItems.map((ci) => {
+        const product = products.find((p) => p.id === ci.productId) || {
+          id: ci.productId,
+          slug: 'attar',
+          name_bn: 'আতর',
+          name_en: 'Attar',
+          mood_bn: '',
+          mood_en: '',
+          description_bn: '',
+          description_en: '',
+          top_notes_bn: '',
+          top_notes_en: '',
+          heart_notes_bn: '',
+          heart_notes_en: '',
+          base_notes_bn: '',
+          base_notes_en: '',
+          occasions_bn: '',
+          occasions_en: '',
+          price_per_ml: 43,
+          bottle_ml: 3,
+          stock_bottles: 100,
+          images: [],
+          accent_hex: '#C9A25A',
+          active: true,
+          sort_order: 1,
+        };
+
+        const paidBottles = Math.max(0, Math.floor(ci.quantity));
+        let freeBottles = 0;
+        if (isOfferActive && offer?.type === 'buy_x_get_y_free' && offer.buy_qty > 0) {
+          const pairs = Math.floor(paidBottles / offer.buy_qty);
+          freeBottles = pairs * offer.free_qty;
+        }
+
+        const unitPrice = product.price_per_ml * product.bottle_ml;
+        const itemSubtotal = paidBottles * unitPrice;
+        const paidMl = paidBottles * product.bottle_ml;
+        const freeMl = freeBottles * product.bottle_ml;
+
+        totalPaidBottles += paidBottles;
+        totalFreeBottles += freeBottles;
+        totalPaidMl += paidMl;
+        subtotal += itemSubtotal;
+
+        return {
+          product,
+          paidBottles,
+          freeBottles,
+          paidMl,
+          freeMl,
+          subtotal: itemSubtotal,
+        };
+      });
+
+      const basisMl =
+        deliverySettings?.count_basis === 'paid_plus_free'
+          ? totalPaidMl + totalFreeBottles * 3
+          : totalPaidMl;
+
+      const threshold = deliverySettings?.free_delivery_above_ml ?? 10;
+      const freeDeliveryEarned = basisMl >= threshold;
+      const standardFee = deliverySettings?.delivery_fee ?? 30;
+      const deliveryFee = freeDeliveryEarned ? 0 : standardFee;
+
+      let bottlesNeededForFreeDelivery = 0;
+      if (!freeDeliveryEarned) {
+        const mlDeficit = threshold - basisMl;
+        bottlesNeededForFreeDelivery = Math.max(1, Math.ceil(mlDeficit / 3));
+      }
+
+      const freeBottleValue = items.reduce(
+        (sum, item) => sum + item.freeBottles * item.product.price_per_ml * item.product.bottle_ml,
+        0
+      );
+      const savings = freeBottleValue + (freeDeliveryEarned ? standardFee : 0);
+      const total = subtotal + deliveryFee;
+
+      return {
+        items,
+        totalPaidBottles,
+        totalFreeBottles,
+        totalPaidMl,
+        totalBottles: totalPaidBottles + totalFreeBottles,
+        subtotal,
+        deliveryFee,
+        freeDeliveryEarned,
+        bottlesNeededForFreeDelivery,
+        total,
+        savings,
+      };
+    },
+    [products, offer, deliverySettings]
+  );
+
   const refetchData = useCallback(async () => {
     try {
       const res = await fetch('/api/bootstrap');
       if (res.ok) {
         const data = await res.json();
-        setProducts(data.products || []);
-        setOffer(data.offer || null);
-        setDeliverySettings(data.deliverySettings || null);
-        setFaqs(data.faqs || []);
-        setReviews(data.reviews || []);
-        setSettings(data.settings || null);
+        if (data.products && data.products.length > 0) setProducts(data.products);
+        if (data.offer) setOffer(data.offer);
+        if (data.deliverySettings) setDeliverySettings(data.deliverySettings);
+        if (data.faqs && data.faqs.length > 0) setFaqs(data.faqs);
+        if (data.reviews) setReviews(data.reviews);
+        if (data.settings) setSettings(data.settings);
       }
-    } catch (err) {
-      console.error('Failed to load bootstrap data:', err);
+    } catch {
+      // Static host graceful fallback: keep bundled initial products
     } finally {
       setIsLoading(false);
     }
@@ -172,7 +283,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     refetchData();
   }, [refetchData]);
 
-  // Recalculate cart authoritatively from server whenever cart changes
+  // Recalculate cart authoritatively from server, or fallback to client calculation
   useEffect(() => {
     localStorage.setItem('ator_mela_cart', JSON.stringify(cart));
 
@@ -191,14 +302,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (res.ok) {
           const calcData = await res.json();
           setCalculation(calcData);
+          return;
         }
-      } catch (err) {
-        console.error('Cart calculation error:', err);
+      } catch {
+        // Fallback for static hosts (Vercel)
       }
+      setCalculation(computeLocalCartCalculation(cart));
     };
 
     calcCart();
-  }, [cart, offer, deliverySettings]);
+  }, [cart, offer, deliverySettings, computeLocalCartCalculation]);
 
   const addToCart = (productId: string, qty: number = 1) => {
     setCart((prev) => {

@@ -16,13 +16,13 @@ export const MotionReveal: React.FC<MotionRevealProps> = ({
   duration = 0.55,
   yOffset = 28,
   className = '',
-  viewportMargin = '-40px',
+  viewportMargin = '0px',
 }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: yOffset }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: viewportMargin }}
+      viewport={{ once: true, amount: 0.05, margin: viewportMargin }}
       transition={{
         duration,
         delay,
@@ -45,7 +45,7 @@ export const MotionStaggerContainer: React.FC<{
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: '-40px' }}
+      viewport={{ once: true, amount: 0.05, margin: '0px' }}
       variants={{
         hidden: {},
         visible: {
