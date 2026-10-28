@@ -305,11 +305,11 @@ export const WhirlingStage: React.FC<WhirlingStageProps> = ({
               </button>
 
               <button
-                onClick={() => onAddToCart(activeProduct.id, 1)}
+                onClick={() => onAddToCart(activeProduct.id, 2)}
                 className="px-3 py-1.5 bg-[#C9A25A] hover:bg-[#E6C98A] text-[#120E0B] font-extrabold text-xs rounded-xl flex items-center gap-1 shadow-md transition-all active:scale-95 cursor-pointer"
               >
                 <ShoppingBag size={12} />
-                <span>{lang === 'bn' ? '+ ব্যাগে নিন' : '+ Add'}</span>
+                <span>{lang === 'bn' ? '+ ৬ মিলি নিন' : '+ Add 6 mL'}</span>
               </button>
             </div>
           </div>

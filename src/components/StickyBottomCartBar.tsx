@@ -38,8 +38,8 @@ export const StickyBottomCartBar: React.FC = () => {
           <span className="text-[10px] text-[#A89A86] block truncate">
             {calculation.freeDeliveryEarned
               ? lang === 'bn'
-                ? 'ডেলিভারি ফ্রি পেয়েছেন 🎉'
-                : 'Free delivery applied 🎉'
+                ? 'ডেলিভারি চার্জ ফ্রি পেয়েছেন 🎉'
+                : 'Delivery charge is free 🎉'
               : lang === 'bn'
               ? 'ক্যাশ অন ডেলিভারি'
               : 'Cash on delivery'}

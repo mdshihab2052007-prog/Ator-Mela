@@ -16,10 +16,10 @@ export const WhyUsSection: React.FC = () => {
       icon: 'sparkles',
     },
     {
-      title_bn: 'ডেলিভারি মাত্র ৳৩০, ১০ মিলি বা তার বেশি নিলে ফ্রি',
-      title_en: 'Delivery Tk 30, Free on 10 mL or more',
+      title_bn: 'ডেলিভারি মাত্র ৳৩০, ১০ মিলি বা তার বেশি নিলে ডেলিভারি চার্জ ফ্রি',
+      title_en: 'Delivery Tk 30, Delivery charge free on 10 mL or more',
       desc_bn: '১০ মিলি বা তার বেশি (৪টি বোতল = ১২ মিলি) নিলে ডেলিভারি চার্জ সম্পূর্ণ ফ্রি।',
-      desc_en: 'Order 10 mL or more (4 bottles = 12 mL) and delivery is completely free.',
+      desc_en: 'Order 10 mL or more (4 bottles = 12 mL) and delivery charge is completely free.',
       icon: 'truck',
     },
     {
@@ -45,7 +45,7 @@ export const WhyUsSection: React.FC = () => {
   };
 
   return (
-    <section className="py-16 bg-[#F3EBDD] text-[#120E0B] relative my-12">
+    <section className="py-16 bg-[#F3EBDD] text-[#120E0B] relative my-12 w-full max-w-full overflow-hidden">
       {/* Decorative hairline brass border on top & bottom */}
       <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#C9A25A] to-transparent" />
       <div className="absolute bottom-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#C9A25A] to-transparent" />

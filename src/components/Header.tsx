@@ -57,14 +57,14 @@ export const Header: React.FC = () => {
         />
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Facebook Link */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          {/* Facebook Link (desktop only to prevent mobile overflow; mobile has floating FB) */}
           {fbUrl && (
             <a
               href={fbUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-[#A89A86] hover:text-[#1877F2] px-2 sm:px-2.5 py-1.5 rounded-lg border border-[#C9A25A]/20 hover:border-[#1877F2]/50 bg-[#1E1814]/70 transition-all"
+              className="hidden sm:flex items-center gap-1.5 text-xs text-[#A89A86] hover:text-[#1877F2] px-2 sm:px-2.5 py-1.5 rounded-lg border border-[#C9A25A]/20 hover:border-[#1877F2]/50 bg-[#1E1814]/70 transition-all"
               title={lang === 'bn' ? 'ফেসবুক পেজ' : 'Facebook Page'}
             >
               <svg className="w-4 h-4 fill-[#1877F2]" viewBox="0 0 24 24">
@@ -79,7 +79,7 @@ export const Header: React.FC = () => {
           {/* Account / Sign In Button */}
           <button
             onClick={() => openAuthModal(user ? 'profile' : 'login')}
-            className="flex items-center gap-1.5 text-xs text-[#A89A86] hover:text-[#E6C98A] px-2 sm:px-2.5 py-1.5 rounded-lg border border-[#C9A25A]/20 hover:border-[#C9A25A]/50 bg-[#1E1814]/70 transition-all cursor-pointer"
+            className="flex items-center gap-1 text-xs text-[#A89A86] hover:text-[#E6C98A] p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-[#C9A25A]/20 hover:border-[#C9A25A]/50 bg-[#1E1814]/70 transition-all cursor-pointer"
             title={user ? (lang === 'bn' ? 'অ্যাকাউন্ট' : 'Account') : (lang === 'bn' ? 'সাইন ইন / সাইন আপ' : 'Sign In / Sign Up')}
           >
             {user && user.photoURL ? (
@@ -96,26 +96,26 @@ export const Header: React.FC = () => {
             </span>
           </button>
 
-          {/* Track Order button */}
+          {/* Track Order button (hidden on mobile, available in footer) */}
           <button
             onClick={() => setIsTrackingOpen(true)}
-            className="flex items-center gap-1.5 text-xs text-[#A89A86] hover:text-[#E6C98A] px-2 sm:px-2.5 py-1.5 rounded-lg border border-transparent hover:border-[#C9A25A]/30 transition-all cursor-pointer"
+            className="hidden md:flex items-center gap-1.5 text-xs text-[#A89A86] hover:text-[#E6C98A] px-2.5 py-1.5 rounded-lg border border-transparent hover:border-[#C9A25A]/30 transition-all cursor-pointer"
             title={lang === 'bn' ? 'অর্ডার ট্র্যাক করুন' : 'Track Order'}
           >
             <Package size={15} className="text-[#C9A25A]" />
-            <span className="hidden md:inline font-medium">
+            <span className="font-medium">
               {lang === 'bn' ? 'অর্ডার ট্র্যাক' : 'Track Order'}
             </span>
           </button>
 
-          {/* AI Scent Consultant Button */}
+          {/* AI Scent Consultant Button (hidden on mobile header; mobile has floating button) */}
           <button
             onClick={() => setIsAiAdvisorOpen(true)}
-            className="flex items-center gap-1.5 text-xs text-[#E6C98A] hover:text-[#FFF] px-2.5 py-1.5 rounded-lg border border-[#C9A25A]/50 bg-gradient-to-r from-[#1E1814] to-[#2A2016] hover:border-[#C9A25A] shadow-sm transition-all cursor-pointer group"
+            className="hidden sm:flex items-center gap-1.5 text-xs text-[#E6C98A] hover:text-[#FFF] px-2.5 py-1.5 rounded-lg border border-[#C9A25A]/50 bg-gradient-to-r from-[#1E1814] to-[#2A2016] hover:border-[#C9A25A] shadow-sm transition-all cursor-pointer group"
             title={lang === 'bn' ? 'AI সুবাস পরামর্শী' : 'AI Scent Advisor'}
           >
             <Wand2 size={14} className="text-[#C9A25A] group-hover:rotate-12 transition-transform" />
-            <span className="hidden sm:inline font-bold">
+            <span className="font-bold">
               {lang === 'bn' ? 'AI সুবাস' : 'AI Match'}
             </span>
           </button>
@@ -123,13 +123,13 @@ export const Header: React.FC = () => {
           {/* Wishlist Icon Button with count badge */}
           <button
             onClick={() => setIsWishlistOpen(true)}
-            className="relative p-2 bg-[#1E1814] hover:bg-[#2A221C] border border-[#C9A25A]/30 hover:border-rose-400/60 rounded-xl text-[#F3EBDD] transition-all cursor-pointer group active:scale-95"
+            className="relative p-1.5 sm:p-2 bg-[#1E1814] hover:bg-[#2A221C] border border-[#C9A25A]/30 hover:border-rose-400/60 rounded-xl text-[#F3EBDD] transition-all cursor-pointer group active:scale-95"
             aria-label="View Wishlist"
             title={lang === 'bn' ? 'পছন্দের তালিকা' : 'Wishlist'}
           >
-            <Heart size={18} className="text-rose-400 group-hover:scale-110 transition-transform" />
+            <Heart size={16} className="text-rose-400 group-hover:scale-110 transition-transform sm:w-[18px] sm:h-[18px]" />
             {wishlist.length > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-rose-500 text-white font-manrope font-extrabold text-[10px] flex items-center justify-center shadow-md">
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-manrope font-extrabold text-[10px] flex items-center justify-center shadow-md">
                 {lang === 'bn' ? toBanglaDigits(wishlist.length) : wishlist.length}
               </span>
             )}

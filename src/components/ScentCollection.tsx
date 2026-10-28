@@ -21,10 +21,11 @@ export const ScentCollection: React.FC = () => {
 
   const isOfferActive = offer && offer.active && offer.claimed_count < offer.buyer_limit;
 
-  const getQty = (productId: string) => quantities[productId] || 1;
+  // Minimum purchase is 6 mL (2 bottles), increments by 3 mL (1 bottle)
+  const getQty = (productId: string) => quantities[productId] || 2;
 
   const setQty = (productId: string, val: number) => {
-    setQuantities((prev) => ({ ...prev, [productId]: Math.max(1, val) }));
+    setQuantities((prev) => ({ ...prev, [productId]: Math.max(2, val) }));
   };
 
   const handleQuickAdd = (product: Product) => {
@@ -108,7 +109,7 @@ export const ScentCollection: React.FC = () => {
                 {isOfferActive && (
                   <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-[#C9A25A] text-[#120E0B] text-[10px] font-extrabold flex items-center gap-1 shadow-md font-hind">
                     <Sparkles size={11} />
-                    <span>{lang === 'bn' ? '৬ মিলিতে ৩ মিলি ফ্রি' : 'Buy 6 mL Get 3 mL FREE'}</span>
+                    <span>{lang === 'bn' ? '৬ মিলি কিনলে ৩ মিলি ফ্রি পাবেন' : 'You will get 3 mL free if you buy 6 mL'}</span>
                   </div>
                 )}
 
@@ -215,22 +216,24 @@ export const ScentCollection: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* Stepper + Add CTA */}
+                  {/* Stepper + Add CTA: Minimum 6 mL, steps of 3 mL surplus */}
                   <div className="flex items-center gap-2">
                     <div className="flex items-center border border-[#C9A25A]/40 rounded-xl bg-[#120E0B] overflow-hidden">
                       <button
                         onClick={() => setQty(product.id, qty - 1)}
-                        className="px-2.5 py-2 text-[#A89A86] hover:text-[#F3EBDD] hover:bg-[#1E1814]"
+                        disabled={qty <= 2}
+                        className={`px-2.5 py-2 ${qty <= 2 ? 'text-stone-700 cursor-not-allowed' : 'text-[#A89A86] hover:text-[#F3EBDD] hover:bg-[#1E1814] cursor-pointer'}`}
                         aria-label="Decrease quantity"
+                        title={qty <= 2 ? (lang === 'bn' ? 'সর্বনিম্ন ৬ মিলি' : 'Minimum 6 mL') : ''}
                       >
                         <Minus size={13} />
                       </button>
-                      <span className="px-2 font-manrope font-bold text-xs text-[#F3EBDD]">
-                        {formatQuantity(qty, lang)}
+                      <span className="px-2 font-manrope font-bold text-xs text-[#E6C98A] min-w-[56px] text-center">
+                        {formatQuantity(qty * 3, lang)} {lang === 'bn' ? 'মিলি' : 'mL'}
                       </span>
                       <button
                         onClick={() => setQty(product.id, qty + 1)}
-                        className="px-2.5 py-2 text-[#A89A86] hover:text-[#F3EBDD] hover:bg-[#1E1814]"
+                        className="px-2.5 py-2 text-[#A89A86] hover:text-[#F3EBDD] hover:bg-[#1E1814] cursor-pointer"
                         aria-label="Increase quantity"
                       >
                         <Plus size={13} />
@@ -243,8 +246,8 @@ export const ScentCollection: React.FC = () => {
                     >
                       <ShoppingBag size={14} />
                       <span>
-                        {lang === 'bn' ? 'ব্যাগে নিন' : 'Add to Bag'}
-                        {freeBottlesEarned > 0 && ` (+${formatQuantity(freeBottlesEarned, lang)} ফ্রি)`}
+                        {lang === 'bn' ? `ব্যাগে নিন (${formatPrice(qty * unitPrice, 'bn')})` : `Add (${formatPrice(qty * unitPrice, 'en')})`}
+                        {freeBottlesEarned > 0 && ` (+${formatQuantity(freeBottlesEarned * 3, lang)} ${lang === 'bn' ? 'মিলি ফ্রি' : 'mL free'})`}
                       </span>
                     </button>
                   </div>

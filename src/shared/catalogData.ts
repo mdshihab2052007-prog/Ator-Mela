@@ -597,9 +597,9 @@ export const initialSiteSettings: SiteSettings = {
   fb_page_url: 'https://www.facebook.com/share/1F2jSKW9VL/',
   admin_emails: ['faysalahmad687@gmail.com'],
   announcement_bn:
-    '৬ মিলি কিনলে ৩ মিলি ফ্রি · প্রথম ৫০ জনের জন্য বিশেষ অফার · ০/৫০ বুকিং হয়েছে · ১০ মিলি বা তার বেশি নিলে ডেলিভারি ফ্রি',
+    '৬ মিলি কিনলে ৩ মিলি ফ্রি · প্রথম ৫০ জনের জন্য বিশেষ অফার · ০/৫০ বুকিং হয়েছে · ১০ মিলি বা তার বেশি নিলে ডেলিভারি চার্জ ফ্রি',
   announcement_en:
-    'Buy 6 mL Get 3 mL Free · First 50 Buyers Special · 0/50 Claimed · Free Delivery on 10 mL or more',
+    'You will get 3 mL free if you buy 6 mL · First 50 Buyers Special · 0/50 Claimed · Delivery charge free on 10 mL or more',
   meta_pixel_id: '',
   ga4_id: '',
   maintenance_mode: false,
@@ -612,10 +612,10 @@ export const initialSiteSettings: SiteSettings = {
       icon: 'sparkles',
     },
     {
-      title_bn: 'ডেলিভারি মাত্র ৳৩০, ১০ মিলির বেশি নিলে ফ্রি',
-      title_en: 'Delivery Tk 30, Free above 10 mL',
+      title_bn: 'ডেলিভারি মাত্র ৳৩০, ১০ মিলির বেশি নিলে ডেলিভারি চার্জ ফ্রি',
+      title_en: 'Delivery Tk 30, Delivery charge free above 10 mL',
       desc_bn: '৪টি বা তার বেশি বোতল (১২+ মিলি) নিলে ডেলিভারি চার্জ সম্পূর্ণ ফ্রি।',
-      desc_en: 'Order 4 or more bottles (12+ mL) and delivery is completely free.',
+      desc_en: 'Order 4 or more bottles (12+ mL) and delivery charge is completely free.',
       icon: 'truck',
     },
     {

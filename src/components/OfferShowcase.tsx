@@ -52,13 +52,13 @@ export const OfferShowcase: React.FC = () => {
           </div>
 
           <h2 className="font-cormorant text-3xl sm:text-4xl lg:text-5xl font-bold text-[#F3EBDD]">
-            {lang === 'bn' ? '৬ মিলি কিনলে ৩ মিলি ফ্রি' : 'Buy 6 mL Get 3 mL Free'}
+            {lang === 'bn' ? '৬ মিলি কিনলে ৩ মিলি ফ্রি পাবেন' : 'You will get 3 mL free if you buy 6 mL'}
           </h2>
 
           <p className="text-sm sm:text-base text-[#A89A86] max-w-lg mx-auto font-hind">
             {lang === 'bn'
-              ? 'যেকোনো আতরের ৬ মিলি (২টি বোতল) কিনলে ৩ মিলি (১টি বোতল) সম্পূর্ণ ফ্রি! (প্রতি ৬ মিলিতে প্রযোজ্য)'
-              : 'Buy 6 mL (2 bottles) of any attar, get 3 mL (1 bottle) of the same attar free.'}
+              ? 'যেকোনো আতরের ৬ মিলি (২টি বোতল) কিনলে ৩ মিলি (১টি বোতল) সম্পূর্ণ ফ্রি পাবেন! (প্রতি ৬ মিলিতে প্রযোজ্য)'
+              : 'You will get 3 mL free if you buy 6 mL (2 bottles) of any signature attar.'}
           </p>
 
           {/* VISUAL FORMULA: [Bottle] + [Bottle] = [Bottle FREE] */}
@@ -105,8 +105,8 @@ export const OfferShowcase: React.FC = () => {
             </p>
             <p className="text-xs sm:text-sm text-emerald-400 font-medium font-hind">
               {lang === 'bn'
-                ? '★ ১০ মিলি বা তার বেশি (৪টি বোতল) নিলে ডেলিভারি চার্জ নেই (সম্পূর্ণ ফ্রি)'
-                : '★ No delivery fee on 10 mL or more (4+ bottles)'}
+                ? '★ ১০ মিলি বা তার বেশি (৪টি বোতল) নিলে ডেলিভারি চার্জ সম্পূর্ণ ফ্রি'
+                : '★ Delivery charge is completely free on 10 mL or more (4+ bottles)'}
             </p>
           </div>
 

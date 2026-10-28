@@ -144,6 +144,17 @@ export const CheckoutModal: React.FC = () => {
       return;
     }
 
+    // Minimum buying point is 6 mL (2 bottles)
+    const totalPaidBottles = calculation?.totalPaidBottles || 0;
+    if (totalPaidBottles < 2) {
+      setErrorMsg(
+        lang === 'bn'
+          ? 'সর্বনিম্ন অর্ডার ৬ মিলি (২টি বোতল)। অনুগ্রহ করে ব্যাগে অন্তত ৬ মিলি যোগ করুন।'
+          : 'Minimum order is 6 mL (2 bottles). Please add at least 6 mL to proceed.'
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {

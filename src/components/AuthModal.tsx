@@ -16,6 +16,7 @@ export const AuthModal: React.FC = () => {
     signUpWithEmail,
     signInWithEmail,
     signInWithGoogle,
+    signInWithDemoAccount,
     signOutUser,
     updateUserProfile,
   } = useAuth();
@@ -49,6 +50,24 @@ export const AuthModal: React.FC = () => {
 
   if (!isAuthModalOpen) return null;
 
+  const handleDemoSignIn = async () => {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    try {
+      setIsSubmitting(true);
+      await signInWithDemoAccount();
+      setSuccessMsg(lang === 'bn' ? 'টেস্ট অ্যাকাউন্টে সফলভাবে লগইন হয়েছে!' : 'Demo account signed in successfully!');
+      setTimeout(() => {
+        setIsAuthModalOpen(false);
+      }, 900);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || (lang === 'bn' ? 'টেস্ট লগইন ব্যর্থ হয়েছে।' : 'Demo login failed.'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -76,7 +95,7 @@ export const AuthModal: React.FC = () => {
       if (err.code === 'auth/email-already-in-use') {
         setErrorMsg(lang === 'bn' ? 'এই ইমেইলটি ইতিমধ্যে নিবন্ধিত।' : 'This email is already registered.');
       } else if (err?.message?.includes('token-service-api') || err?.message?.includes('securetoken')) {
-        setErrorMsg(lang === 'bn' ? 'Firebase Authentication API প্রস্তুত হচ্ছে। আপনি লগইন ছাড়াই সরাসরি অর্ডার করতে পারবেন।' : 'Firebase Token Service API is initializing on your cloud project. You can order directly without login.');
+        setErrorMsg(lang === 'bn' ? 'Firebase Authentication API সক্রিয় হচ্ছে। আপনি টেস্ট অ্যাকাউন্ট ব্যবহার করতে পারেন বা লগইন ছাড়াই অর্ডার করতে পারেন।' : 'Firebase Token Service API is initializing. You can use 1-click Demo Login or place orders directly.');
       } else {
         setErrorMsg(err.message || (lang === 'bn' ? 'অ্যাকাউন্ট তৈরি করা যায়নি।' : 'Failed to create account.'));
       }
@@ -107,7 +126,7 @@ export const AuthModal: React.FC = () => {
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         setErrorMsg(lang === 'bn' ? 'ভুল ইমেইল বা পাসওয়ার্ড।' : 'Invalid email or password.');
       } else if (err?.message?.includes('token-service-api') || err?.message?.includes('securetoken')) {
-        setErrorMsg(lang === 'bn' ? 'Firebase Authentication API প্রস্তুত হচ্ছে। আপনি লগইন ছাড়াই সরাসরি অর্ডার করতে পারবেন।' : 'Firebase Token Service API is initializing on your cloud project. You can order directly without login.');
+        setErrorMsg(lang === 'bn' ? 'Firebase Authentication API সক্রিয় হচ্ছে। আপনি টেস্ট অ্যাকাউন্ট ব্যবহার করতে পারেন বা লগইন ছাড়াই অর্ডার করতে পারেন।' : 'Firebase Token Service API is initializing. You can use 1-click Demo Login or place orders directly.');
       } else {
         setErrorMsg(err.message || (lang === 'bn' ? 'লগইন ব্যর্থ হয়েছে।' : 'Login failed.'));
       }
@@ -128,8 +147,10 @@ export const AuthModal: React.FC = () => {
       }, 1000);
     } catch (err: any) {
       console.error(err);
-      if (err?.message?.includes('token-service-api') || err?.message?.includes('securetoken')) {
-        setErrorMsg(lang === 'bn' ? 'Firebase Authentication API প্রস্তুত হচ্ছে। আপনি লগইন ছাড়াই সরাসরি ক্যাশ অন ডেলিভারিতে অর্ডার করতে পারেন।' : 'Firebase Token Service API is initializing. You can place your order directly via Cash on Delivery.');
+      if (err?.code === 'auth/popup-blocked') {
+        setErrorMsg(lang === 'bn' ? 'ব্রাউজার পপআপ ব্লক করেছে। অনুগ্রহ করে পপআপ অনুমোদন করুন অথবা ইমেইল/টেস্ট অ্যাকাউন্ট দিয়ে লগইন করুন।' : 'Browser blocked popup. Please allow popups or use Email/Demo account.');
+      } else if (err?.message?.includes('token-service-api') || err?.message?.includes('securetoken')) {
+        setErrorMsg(lang === 'bn' ? 'Firebase Authentication API সক্রিয় হচ্ছে। আপনি ১-ক্লিক টেস্ট অ্যাকাউন্ট দিয়ে লগইন করতে পারেন।' : 'Firebase Token Service is initializing. You can use 1-Click Demo Login.');
       } else {
         setErrorMsg(err.message || (lang === 'bn' ? 'Google সাইন ইন ব্যর্থ হয়েছে।' : 'Google Sign-In failed.'));
       }
@@ -137,6 +158,7 @@ export const AuthModal: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -383,6 +405,16 @@ export const AuthModal: React.FC = () => {
                 </svg>
                 {lang === 'bn' ? 'Google দিয়ে সাইন ইন' : 'Sign In with Google'}
               </button>
+
+              <button
+                type="button"
+                onClick={handleDemoSignIn}
+                disabled={isSubmitting}
+                className="w-full py-2.5 px-4 rounded-lg bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25 text-amber-300 font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+              >
+                <span>⚡</span>
+                <span>{lang === 'bn' ? '১-ক্লিকে টেস্ট অ্যাকাউন্টে প্রবেশ (Demo Account)' : '1-Click Demo Account Login'}</span>
+              </button>
             </form>
           )}
 
@@ -465,6 +497,16 @@ export const AuthModal: React.FC = () => {
                   />
                 </svg>
                 {lang === 'bn' ? 'Google দিয়ে সাইন ইন' : 'Sign In with Google'}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDemoSignIn}
+                disabled={isSubmitting}
+                className="w-full py-2.5 px-4 rounded-lg bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25 text-amber-300 font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+              >
+                <span>⚡</span>
+                <span>{lang === 'bn' ? '১-ক্লিকে টেস্ট অ্যাকাউন্টে প্রবেশ (Demo Account)' : '1-Click Demo Account Login'}</span>
               </button>
             </form>
           )}

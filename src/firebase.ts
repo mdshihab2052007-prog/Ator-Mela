@@ -60,43 +60,10 @@ async function ensureCleanAuthSession() {
     if (typeof auth.authStateReady === 'function') {
       await auth.authStateReady();
     }
-    if (auth.currentUser) {
-      try {
-        await auth.currentUser.getIdToken();
-      } catch (tokenErr: any) {
-        if (
-          tokenErr?.message?.includes('token-service-api') ||
-          tokenErr?.code === 'auth/internal-error' ||
-          tokenErr?.message?.includes('disabled')
-        ) {
-          console.warn('Auth token service is not enabled on this GCP project. Clearing session to unblock Firestore.');
-          await auth.signOut();
-          try {
-            if (typeof indexedDB !== 'undefined') {
-              indexedDB.deleteDatabase('firebaseLocalStorageDb');
-            }
-            if (typeof localStorage !== 'undefined') {
-              Object.keys(localStorage).forEach((k) => {
-                if (k.startsWith('firebase:authUser:')) localStorage.removeItem(k);
-              });
-            }
-          } catch {}
-          await enableNetwork(db);
-        }
-      }
-    }
-  } catch {}
-}
-
-async function testConnection() {
-  await ensureCleanAuthSession();
-  try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error('Please check your Firebase configuration.');
-    }
+  } catch (err) {
+    console.warn('Firebase auth ready check:', err);
   }
 }
 
-testConnection();
+ensureCleanAuthSession();
+

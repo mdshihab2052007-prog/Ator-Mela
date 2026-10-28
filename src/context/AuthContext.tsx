@@ -69,6 +69,7 @@ interface AuthContextType {
   signUpWithEmail: (email: string, pass: string, name: string, phone?: string, fullAddress?: string) => Promise<void>;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signInWithDemoAccount: () => Promise<void>;
   signOutUser: () => Promise<void>;
   updateUserProfile: (data: Partial<UserProfileData>) => Promise<void>;
   saveOrderToProfile: (orderData: Omit<UserOrderData, 'userId'>) => Promise<void>;
@@ -94,23 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        // Validate token service availability before calling Firestore
-        try {
-          await currentUser.getIdToken();
-        } catch (tokenErr: any) {
-          if (
-            tokenErr?.message?.includes('token-service-api') ||
-            tokenErr?.code === 'auth/internal-error' ||
-            tokenErr?.message?.includes('disabled')
-          ) {
-            console.warn('Auth token service is not enabled for this GCP project. Clearing session to unblock Firestore.');
-            await signOut(auth);
-            setUser(null);
-            setUserProfile(null);
-            setLoading(false);
-            return;
-          }
-        }
         setUser(currentUser);
         const userDocRef = doc(db, 'users', currentUser.uid);
         const userPath = `users/${currentUser.uid}`;
@@ -136,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (err?.code === 'permission-denied' || err?.message?.includes('insufficient permissions')) {
             handleFirestoreError(err, OperationType.GET, userPath);
           } else {
-            console.warn('Firestore user profile offline/connectivity notice:', err?.message || err);
+            console.warn('Firestore profile fallback:', err?.message || err);
             setUserProfile({
               uid: currentUser.uid,
               email: currentUser.email || '',
@@ -154,6 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => unsubscribe();
   }, []);
+
 
   // Listen for user orders in real time when authenticated
   useEffect(() => {
@@ -228,6 +213,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await signInWithPopup(auth, provider);
   };
 
+  const signInWithDemoAccount = async () => {
+    const demoEmail = 'demo@atormela.online';
+    const demoPass = 'demo123456';
+    try {
+      await signInWithEmailAndPassword(auth, demoEmail, demoPass);
+    } catch (err: any) {
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+        try {
+          await signUpWithEmail(demoEmail, demoPass, 'সম্মানিত টেস্ট গ্রাহক', '01643249148', 'বোয়ালিয়া, রাজশাহী');
+        } catch (innerErr) {
+          console.warn('Demo account local fallback:', innerErr);
+          setUserProfile({
+            uid: 'demo-user-123',
+            email: demoEmail,
+            displayName: 'সম্মানিত টেস্ট গ্রাহক',
+            phone: '01643249148',
+            district: 'Rajshahi',
+            areaUpazila: 'Boalia',
+            fullAddress: 'বোয়ালিয়া, রাজশাহী',
+          });
+        }
+      } else {
+        throw err;
+      }
+    }
+  };
+
   const signOutUser = async () => {
     await signOut(auth);
     setIsAuthModalOpen(false);
@@ -271,6 +283,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+
   return (
     <AuthContext.Provider
       value={{
@@ -286,6 +299,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUpWithEmail,
         signInWithEmail,
         signInWithGoogle,
+        signInWithDemoAccount,
         signOutUser,
         updateUserProfile,
         saveOrderToProfile,
@@ -294,6 +308,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
+
 };
 
 export const useAuth = () => {

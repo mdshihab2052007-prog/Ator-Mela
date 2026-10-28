@@ -16,7 +16,7 @@ export const ProductDetailModal: React.FC = () => {
     toggleWishlist,
     isInWishlist,
   } = useApp();
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(2); // Minimum purchase is 6 mL (2 bottles)
   const [activeImageIdx, setActiveImageIdx] = useState(0);
 
   if (!selectedProduct) return null;
@@ -24,7 +24,7 @@ export const ProductDetailModal: React.FC = () => {
   const product = selectedProduct;
   const isOfferActive = offer && offer.active && offer.claimed_count < offer.buyer_limit;
 
-  // Compute free bottles if offer active (Buy 2 get 1 free)
+  // Compute free bottles if offer active (Buy 6 mL get 3 mL free = 2 bottles get 1 free)
   const freeBottles = isOfferActive ? Math.floor(quantity / 2) : 0;
   const unitPrice = product.price_per_ml * product.bottle_ml;
   const totalPrice = quantity * unitPrice;
@@ -219,22 +219,24 @@ export const ProductDetailModal: React.FC = () => {
                 <div className="flex items-center justify-between p-3 bg-[#120E0B] rounded-xl border border-[#C9A25A]/30">
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-[#A89A86]">
-                      {lang === 'bn' ? 'বোতলের সংখ্যা:' : 'Quantity:'}
+                      {lang === 'bn' ? 'পরিমাণ (মিলি):' : 'Volume (mL):'}
                     </span>
                     <div className="flex items-center border border-[#C9A25A]/40 rounded-lg overflow-hidden bg-[#1E1814]">
                       <button
-                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                        className="px-2.5 py-1.5 text-[#A89A86] hover:text-[#F3EBDD]"
+                        onClick={() => setQuantity((q) => Math.max(2, q - 1))}
+                        disabled={quantity <= 2}
+                        className={`px-2.5 py-1.5 ${quantity <= 2 ? 'text-stone-700 cursor-not-allowed' : 'text-[#A89A86] hover:text-[#F3EBDD] cursor-pointer'}`}
                         aria-label="Decrease"
+                        title={quantity <= 2 ? (lang === 'bn' ? 'সর্বনিম্ন ৬ মিলি' : 'Minimum 6 mL') : ''}
                       >
                         <Minus size={14} />
                       </button>
-                      <span className="px-3 py-1 font-manrope font-bold text-sm text-[#F3EBDD]">
-                        {formatQuantity(quantity, lang)}
+                      <span className="px-3 py-1 font-manrope font-bold text-sm text-[#E6C98A] min-w-[70px] text-center">
+                        {formatQuantity(quantity * 3, lang)} {lang === 'bn' ? 'মিলি' : 'mL'}
                       </span>
                       <button
                         onClick={() => setQuantity((q) => q + 1)}
-                        className="px-2.5 py-1.5 text-[#A89A86] hover:text-[#F3EBDD]"
+                        className="px-2.5 py-1.5 text-[#A89A86] hover:text-[#F3EBDD] cursor-pointer"
                         aria-label="Increase"
                       >
                         <Plus size={14} />
@@ -248,8 +250,8 @@ export const ProductDetailModal: React.FC = () => {
                     </span>
                     {freeBottles > 0 && (
                       <span className="text-[11px] text-emerald-400 font-semibold block">
-                        + {formatQuantity(freeBottles, lang)}{' '}
-                        {lang === 'bn' ? 'টি ফ্রি বোতল' : 'Free Bottle'}
+                        + {formatQuantity(freeBottles * 3, lang)}{' '}
+                        {lang === 'bn' ? 'মিলি ফ্রি পাবেন' : 'mL Free'}
                       </span>
                     )}
                   </div>

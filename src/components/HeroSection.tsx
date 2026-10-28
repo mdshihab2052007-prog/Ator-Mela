@@ -97,7 +97,7 @@ export const HeroSection: React.FC = () => {
             </span>
             <span className="text-[#C9A25A]">·</span>
             <span className="text-emerald-400 font-medium">
-              {lang === 'bn' ? '10 মিলির বেশি নিলে ডেলিভারি ফ্রি' : 'Free above 10 mL'}
+              {lang === 'bn' ? '১০ মিলির বেশি নিলে ডেলিভারি চার্জ ফ্রি' : 'Delivery charge free above 10 mL'}
             </span>
           </div>
 
@@ -110,7 +110,7 @@ export const HeroSection: React.FC = () => {
               <ShoppingBag size={18} />
               <span>{lang === 'bn' ? 'এখনই অর্ডার করুন' : 'Order Now'}</span>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#120E0B]/20 text-[#120E0B]">
-                {lang === 'bn' ? '2+1 ফ্রি অফার' : '2+1 Offer'}
+                {lang === 'bn' ? '৬ মিলি কিনলে ৩ মিলি ফ্রি' : 'Buy 6 mL Get 3 mL Free'}
               </span>
             </button>
 

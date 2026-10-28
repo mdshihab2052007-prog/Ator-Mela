@@ -43,7 +43,7 @@ function MainStorefront() {
   }
 
   return (
-    <div className="min-h-screen bg-[#120E0B] text-[#F3EBDD] flex flex-col relative selection:bg-[#C9A25A] selection:text-[#120E0B]">
+    <div className="w-full max-w-full overflow-x-hidden min-h-screen bg-[#120E0B] text-[#F3EBDD] flex flex-col relative selection:bg-[#C9A25A] selection:text-[#120E0B]">
       {/* Sticky top Announcement Bar */}
       <AnnouncementBar />
 
@@ -51,7 +51,7 @@ function MainStorefront() {
       <Header />
 
       {/* Hero Section */}
-      <main className="flex-1">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden">
         <HeroSection />
 
         {/* Launch Offer Showcase with subtle slide-up */}

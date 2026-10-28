@@ -52,7 +52,7 @@ export const CartDrawer: React.FC = () => {
           </button>
         </div>
 
-        {/* Free Delivery Nudge Strip */}
+        {/* Delivery Charge Free Nudge Strip */}
         {calculation && (
           <div className="px-4 py-2.5 bg-gradient-to-r from-[#2A2016] to-[#1E1814] border-b border-[#C9A25A]/30 flex items-center justify-between text-xs sm:text-sm">
             {calculation.freeDeliveryEarned ? (
@@ -60,8 +60,8 @@ export const CartDrawer: React.FC = () => {
                 <CheckCircle2 size={16} className="text-[#C9A25A] shrink-0" />
                 <span>
                   {lang === 'bn'
-                    ? 'অভিনন্দন! আপনি ডেলিভারি ফ্রি পেয়েছেন 🎉'
-                    : 'Congratulations! You unlocked Free Delivery 🎉'}
+                    ? 'অভিনন্দন! আপনার ডেলিভারি চার্জ সম্পূর্ণ ফ্রি 🎉'
+                    : 'Congratulations! Your delivery charge is free 🎉'}
                 </span>
               </div>
             ) : (
@@ -75,7 +75,7 @@ export const CartDrawer: React.FC = () => {
                         <strong className="text-[#E6C98A]">
                           {formatQuantity(calculation.bottlesNeededForFreeDelivery, 'bn')}টি
                         </strong>{' '}
-                        বোতল নিলে ডেলিভারি ফ্রি
+                        বোতল নিলে ডেলিভারি চার্জ ফ্রি
                       </>
                     ) : (
                       <>
@@ -83,14 +83,14 @@ export const CartDrawer: React.FC = () => {
                         <strong className="text-[#E6C98A]">
                           {calculation.bottlesNeededForFreeDelivery} more
                         </strong>{' '}
-                        bottle for free delivery
+                        bottle for free delivery charge
                       </>
                     )}
                   </span>
                 </div>
                 <button
                   onClick={addOneMoreBottleForFreeDelivery}
-                  className="px-2.5 py-1 bg-[#C9A25A] text-[#120E0B] font-bold text-xs rounded-md hover:bg-[#E6C98A] transition-colors shadow-xs active:scale-95 shrink-0 font-hind"
+                  className="px-2.5 py-1 bg-[#C9A25A] text-[#120E0B] font-bold text-xs rounded-md hover:bg-[#E6C98A] transition-colors shadow-xs active:scale-95 shrink-0 font-hind cursor-pointer"
                 >
                   {lang === 'bn' ? '+১ বোতল' : '+1 bottle'}
                 </button>
@@ -281,21 +281,34 @@ export const CartDrawer: React.FC = () => {
               </span>
             </div>
 
-            <p className="text-[11px] text-[#A89A86] text-center">
-              {lang === 'bn'
-                ? 'ক্যাশ অন ডেলিভারি · পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন'
-                : 'Cash on Delivery · Pay after receiving parcel'}
-            </p>
+            {/* Minimum 6 mL Warning */}
+            {calculation.totalPaidBottles < 2 && (
+              <div className="p-2.5 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs text-center font-medium">
+                {lang === 'bn'
+                  ? '⚠️ সর্বনিম্ন অর্ডার ৬ মিলি (২টি বোতল)। অনুগ্রহ করে অন্তত ৬ মিলি নির্বাচন করুন।'
+                  : '⚠️ Minimum order is 6 mL (2 bottles). Please select at least 6 mL.'}
+              </div>
+            )}
 
             {/* Checkout Button */}
             <button
               onClick={() => {
+                if (calculation.totalPaidBottles < 2) return;
                 setIsCartOpen(false);
                 setIsCheckoutOpen(true);
               }}
-              className="w-full py-3.5 bg-[#C9A25A] hover:bg-[#E6C98A] text-[#120E0B] font-bold text-base rounded-xl transition-all shadow-lg hover:shadow-[#C9A25A]/20 flex items-center justify-center gap-2 active:scale-[0.99]"
+              disabled={calculation.totalPaidBottles < 2}
+              className={`w-full py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 font-bold text-base ${
+                calculation.totalPaidBottles < 2
+                  ? 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'
+                  : 'bg-[#C9A25A] hover:bg-[#E6C98A] text-[#120E0B] hover:shadow-[#C9A25A]/20 cursor-pointer active:scale-[0.99]'
+              }`}
             >
-              <span>{lang === 'bn' ? 'অর্ডার করতে এগিয়ে যান' : 'Proceed to Checkout'}</span>
+              <span>
+                {calculation.totalPaidBottles < 2
+                  ? (lang === 'bn' ? 'সর্বনিম্ন অর্ডার ৬ মিলি প্রয়োজন' : 'Minimum 6 mL Order Required')
+                  : (lang === 'bn' ? 'অর্ডার করতে এগিয়ে যান' : 'Proceed to Checkout')}
+              </span>
               <ArrowRight size={18} />
             </button>
           </div>

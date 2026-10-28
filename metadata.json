@@ -1,6 +1,6 @@
 {
   "name": "Ator Mela | আতর মেলা",
-  "description": "খাঁটি ঘ্রাণ, সাশ্রয়ী দামে — প্রিমিয়াম আতর সংগ্রহ। 3 মিলি মাত্র ৳129, 10 মিলির বেশি নিলে ফ্রি ডেলিভারি।",
+  "description": "খাঁটি ঘ্রাণ, সাশ্রয়ী দামে — প্রিমিয়াম আতর সংগ্রহ। ৩ মিলি মাত্র ৳১২৯, ১০ মিলির বেশি নিলে ডেলিভারি চার্জ ফ্রি।",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
