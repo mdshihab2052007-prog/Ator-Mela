@@ -92,7 +92,13 @@ export const AuthModal: React.FC = () => {
       }, 1200);
     } catch (err: any) {
       console.error(err);
-      if (err.code === 'auth/email-already-in-use') {
+      if (err.code === 'auth/operation-not-allowed' || err?.message?.includes('operation-not-allowed')) {
+        setErrorMsg(
+          lang === 'bn'
+            ? 'Firebase Console-এ "Email/Password" সাইন-ইন মেথড চালু (Enable) করা নেই। নিচের ১-ক্লিক টেস্ট অ্যাকাউন্টে ক্লিক করে এখনই লগইন করুন অথবা Firebase Console > Authentication > Sign-in method থেকে Email/Password অন করুন।'
+            : 'Email/Password sign-in is disabled in Firebase Console. Please enable it under Firebase Console > Authentication > Sign-in method, or use the 1-Click Demo Account below.'
+        );
+      } else if (err.code === 'auth/email-already-in-use') {
         setErrorMsg(lang === 'bn' ? 'এই ইমেইলটি ইতিমধ্যে নিবন্ধিত।' : 'This email is already registered.');
       } else if (err?.message?.includes('token-service-api') || err?.message?.includes('securetoken')) {
         setErrorMsg(lang === 'bn' ? 'Firebase Authentication API সক্রিয় হচ্ছে। আপনি টেস্ট অ্যাকাউন্ট ব্যবহার করতে পারেন বা লগইন ছাড়াই অর্ডার করতে পারেন।' : 'Firebase Token Service API is initializing. You can use 1-click Demo Login or place orders directly.');
@@ -123,7 +129,13 @@ export const AuthModal: React.FC = () => {
       }, 1000);
     } catch (err: any) {
       console.error(err);
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+      if (err.code === 'auth/operation-not-allowed' || err?.message?.includes('operation-not-allowed')) {
+        setErrorMsg(
+          lang === 'bn'
+            ? 'Firebase Console-এ "Email/Password" সাইন-ইন মেথড চালু (Enable) করা নেই। নিচের ১-ক্লিক টেস্ট অ্যাকাউন্টে ক্লিক করে এখনই লগইন করুন অথবা Firebase Console > Authentication > Sign-in method থেকে Email/Password অন করুন।'
+            : 'Email/Password sign-in is disabled in Firebase Console. Please enable it under Firebase Console > Authentication > Sign-in method, or use the 1-Click Demo Account below.'
+        );
+      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         setErrorMsg(lang === 'bn' ? 'ভুল ইমেইল বা পাসওয়ার্ড।' : 'Invalid email or password.');
       } else if (err?.message?.includes('token-service-api') || err?.message?.includes('securetoken')) {
         setErrorMsg(lang === 'bn' ? 'Firebase Authentication API সক্রিয় হচ্ছে। আপনি টেস্ট অ্যাকাউন্ট ব্যবহার করতে পারেন বা লগইন ছাড়াই অর্ডার করতে পারেন।' : 'Firebase Token Service API is initializing. You can use 1-click Demo Login or place orders directly.');
@@ -147,7 +159,13 @@ export const AuthModal: React.FC = () => {
       }, 1000);
     } catch (err: any) {
       console.error(err);
-      if (err?.code === 'auth/popup-blocked') {
+      if (err.code === 'auth/operation-not-allowed' || err?.message?.includes('operation-not-allowed')) {
+        setErrorMsg(
+          lang === 'bn'
+            ? 'Firebase Console-এ Google সাইন-ইন চালু (Enable) করা নেই। আপনি নিচের ১-ক্লিক টেস্ট অ্যাকাউন্ট দিয়ে লগইন করতে পারেন।'
+            : 'Google Sign-In is disabled in Firebase Console. You can use the 1-Click Demo Account below.'
+        );
+      } else if (err?.code === 'auth/popup-blocked') {
         setErrorMsg(lang === 'bn' ? 'ব্রাউজার পপআপ ব্লক করেছে। অনুগ্রহ করে পপআপ অনুমোদন করুন অথবা ইমেইল/টেস্ট অ্যাকাউন্ট দিয়ে লগইন করুন।' : 'Browser blocked popup. Please allow popups or use Email/Demo account.');
       } else if (err?.message?.includes('token-service-api') || err?.message?.includes('securetoken')) {
         setErrorMsg(lang === 'bn' ? 'Firebase Authentication API সক্রিয় হচ্ছে। আপনি ১-ক্লিক টেস্ট অ্যাকাউন্ট দিয়ে লগইন করতে পারেন।' : 'Firebase Token Service is initializing. You can use 1-Click Demo Login.');
@@ -284,9 +302,21 @@ export const AuthModal: React.FC = () => {
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-4 flex-1">
           {errorMsg && (
-            <div className="p-3 bg-red-950/80 border border-red-800 text-red-200 rounded-lg text-sm flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-              <span>{errorMsg}</span>
+            <div className="p-3 bg-red-950/80 border border-red-800 text-red-200 rounded-lg text-sm flex flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                <span className="leading-relaxed">{errorMsg}</span>
+              </div>
+              {errorMsg.includes('Firebase Console') && (
+                <button
+                  type="button"
+                  onClick={handleDemoSignIn}
+                  disabled={isSubmitting}
+                  className="mt-1 w-full py-2 px-3 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-md text-xs font-semibold transition text-center flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  ⚡ {lang === 'bn' ? '১-ক্লিক টেস্ট অ্যাকাউন্ট দিয়ে এখনই প্রবেশ করুন' : 'Enter With 1-Click Demo Account Now'}
+                </button>
+              )}
             </div>
           )}
 

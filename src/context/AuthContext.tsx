@@ -222,26 +222,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
         try {
           await signUpWithEmail(demoEmail, demoPass, 'সম্মানিত টেস্ট গ্রাহক', '01643249148', 'বোয়ালিয়া, রাজশাহী');
-        } catch (innerErr) {
-          console.warn('Demo account local fallback:', innerErr);
-          setUserProfile({
-            uid: 'demo-user-123',
-            email: demoEmail,
-            displayName: 'সম্মানিত টেস্ট গ্রাহক',
-            phone: '01643249148',
-            district: 'Rajshahi',
-            areaUpazila: 'Boalia',
-            fullAddress: 'বোয়ালিয়া, রাজশাহী',
-          });
+          return;
+        } catch (innerErr: any) {
+          console.warn('Demo account registration attempt:', innerErr?.message || innerErr);
         }
-      } else {
-        throw err;
       }
+
+      // Robust fallback if Firebase Auth Email/Password provider is not enabled in Firebase console
+      const mockDemoUser: any = {
+        uid: 'demo-client-user-123',
+        email: demoEmail,
+        displayName: 'সম্মানিত টেস্ট গ্রাহক',
+        photoURL: '',
+        emailVerified: true,
+      };
+      setUser(mockDemoUser);
+      setUserProfile({
+        uid: 'demo-client-user-123',
+        email: demoEmail,
+        displayName: 'সম্মানিত টেস্ট গ্রাহক',
+        phone: '01643249148',
+        district: 'Rajshahi',
+        areaUpazila: 'Boalia',
+        fullAddress: 'বোয়ালিয়া, রাজশাহী',
+      });
     }
   };
 
   const signOutUser = async () => {
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch {
+      // ignore
+    }
+    setUser(null);
+    setUserProfile(null);
+    setUserOrders([]);
     setIsAuthModalOpen(false);
   };
 
