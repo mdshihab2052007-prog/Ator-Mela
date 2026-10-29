@@ -1,6 +1,7 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 import { store } from './server/store.ts';
 import { OrderStatus } from './src/shared/types.ts';
 
@@ -10,7 +11,119 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-app.use(express.json());
+// Security: Disable express fingerprint header
+app.disable('x-powered-by');
+
+// Security: Strict HTTP Security Headers (Anti-Clickjacking, Anti-MIME sniffing, XSS Protection)
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
+// Security: Enforce tight request payload body limits to prevent Denial-of-Service (DoS) buffer exhaustion
+app.use(express.json({ limit: '64kb' }));
+app.use(express.urlencoded({ extended: true, limit: '64kb' }));
+
+// Input Sanitization Helpers
+function sanitizeText(val: unknown, maxLen = 250): string {
+  if (typeof val !== 'string') return '';
+  return val
+    .replace(/<[^>]*>?/gm, '') // Strip HTML tags
+    .replace(/[<>"'`]/g, '')     // Strip scripting characters
+    .replace(/javascript:/gi, '')
+    .trim()
+    .slice(0, maxLen);
+}
+
+function sanitizePhone(val: unknown): string {
+  if (typeof val !== 'string') return '';
+  const bnToEn: Record<string, string> = {
+    '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+    '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9',
+  };
+  const normalized = val.replace(/[০-৯]/g, (d) => bnToEn[d] || d);
+  return normalized.replace(/\s+/g, '').replace(/^\+88/, '').trim();
+}
+
+// In-Memory Sliding-Window Rate Limiter
+interface RateLimitRecord {
+  timestamps: number[];
+}
+
+function createRateLimiter(options: { windowMs: number; max: number; message: string }) {
+  const ipStore = new Map<string, RateLimitRecord>();
+
+  // Periodically purge stale records every 5 minutes to avoid memory leaks
+  const interval = setInterval(() => {
+    const now = Date.now();
+    for (const [key, record] of ipStore.entries()) {
+      record.timestamps = record.timestamps.filter((t) => now - t < options.windowMs);
+      if (record.timestamps.length === 0) {
+        ipStore.delete(key);
+      }
+    }
+  }, 5 * 60 * 1000);
+  if (interval.unref) interval.unref();
+
+  return (req: Request, res: Response, next: NextFunction) => {
+    const rawIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
+    const clientIp = rawIp.split(',')[0].trim();
+    const now = Date.now();
+
+    let record = ipStore.get(clientIp);
+    if (!record) {
+      record = { timestamps: [] };
+      ipStore.set(clientIp, record);
+    }
+
+    record.timestamps = record.timestamps.filter((t) => now - t < options.windowMs);
+
+    if (record.timestamps.length >= options.max) {
+      const retryAfterSec = Math.ceil(options.windowMs / 1000);
+      res.setHeader('Retry-After', retryAfterSec);
+      return res.status(429).json({
+        error: options.message,
+        retryAfter: retryAfterSec,
+      });
+    }
+
+    record.timestamps.push(now);
+    next();
+  };
+}
+
+// Security Rate Limiters for critical endpoints
+const orderRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 6,                   // Max 6 orders per IP per 15 mins (anti-spam)
+  message: 'অল্প সময়ে অতিরিক্ত অর্ডারের চেষ্টা করা হয়েছে। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।',
+});
+
+const trackRateLimiter = createRateLimiter({
+  windowMs: 10 * 60 * 1000,
+  max: 30,
+  message: 'অতিরিক্ত ট্র্যাকিং অনুসন্ধানের চেষ্টা। অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন।',
+});
+
+const aiRateLimiter = createRateLimiter({
+  windowMs: 10 * 60 * 1000,
+  max: 20,
+  message: 'AI সার্ভিসের ব্যবহারসীমা অতিক্রম করেছে। অনুগ্রহ করে ১০ মিনিট পর চেষ্টা করুন।',
+});
+
+const adminLoginLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // Max 5 wrong attempts (anti-brute force)
+  message: 'অতিরিক্ত ব্যর্থ এডমিন লগইন চেষ্টা। নিরাপত্তা স্বার্থে ১৫ মিনিটের জন্য ব্লক করা হয়েছে।',
+});
+
+// Admin Cryptographic Session Token Store
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'AtorMela#2026@Secure';
+const adminSessions = new Map<string, { email: string; expiresAt: number }>();
 
 // Public API endpoints
 app.get('/api/bootstrap', (_req: Request, res: Response) => {
@@ -29,13 +142,15 @@ app.post('/api/cart/calculate', (req: Request, res: Response) => {
   if (!Array.isArray(cart)) {
     return res.status(400).json({ error: 'Invalid cart format' });
   }
-  const calculation = store.calculateCart(cart, district);
+  const cleanDistrict = sanitizeText(district, 50);
+  const calculation = store.calculateCart(cart, cleanDistrict);
   res.json(calculation);
 });
 
-app.post('/api/orders', (req: Request, res: Response) => {
-  const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
-  const user_agent = req.headers['user-agent'];
+app.post('/api/orders', orderRateLimiter, (req: Request, res: Response) => {
+  const ip = ((req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '').split(',')[0].trim();
+  const user_agent = (req.headers['user-agent'] || '').slice(0, 255);
+  
   const {
     customer_name,
     customer_phone,
@@ -50,20 +165,67 @@ app.post('/api/orders', (req: Request, res: Response) => {
     website_hp,
   } = req.body;
 
+  // Honeypot spam bot check
+  if (website_hp && typeof website_hp === 'string' && website_hp.trim().length > 0) {
+    return res.status(200).json({
+      success: true,
+      order: {
+        id: `AM-${Date.now().toString().slice(-6)}`,
+        status: 'new',
+        customer_name: 'Bot',
+        customer_phone: '01700000000',
+        total: 0,
+      },
+    });
+  }
+
+  // Sanitize all customer inputs
+  const cleanName = sanitizeText(customer_name, 70);
+  const cleanPhone = sanitizePhone(customer_phone);
+  const cleanDistrict = sanitizeText(district, 50) || 'Rajshahi';
+  const cleanUpazila = sanitizeText(area_upazila, 100);
+  const cleanAddress = sanitizeText(full_address, 300);
+  const cleanNote = sanitizeText(note, 300);
+
+  // Validate sanitized inputs
+  if (!cleanName || cleanName.length < 2) {
+    return res.status(400).json({ error: 'অনুগ্রহ করে আপনার সঠিক নাম লিখুন' });
+  }
+
+  if (!/^01[3-9]\d{8}$/.test(cleanPhone)) {
+    return res.status(400).json({ error: 'সঠিক ১১ ডিজিটের মোবাইল নম্বর প্রদান করুন (যেমন: 01712345678)' });
+  }
+
+  if (!cleanAddress || cleanAddress.length < 5) {
+    return res.status(400).json({ error: 'অনুগ্রহ করে আপনার বিস্তারিত ডেলিভারি ঠিকানা দিন' });
+  }
+
+  // Validate cart items
+  if (!Array.isArray(cart) || cart.length === 0) {
+    return res.status(400).json({ error: 'কার্ট খালি রয়েছে' });
+  }
+
+  const validCart = cart
+    .filter((item: any) => item && typeof item.productId === 'string')
+    .map((item: any) => ({
+      productId: sanitizeText(item.productId, 50),
+      quantity: Math.min(20, Math.max(1, parseInt(item.quantity, 10) || 1)),
+    }));
+
   const result = store.createOrder({
-    customer_name,
-    customer_phone,
-    district,
-    area_upazila,
-    full_address,
-    note,
-    cart: cart || [],
+    customer_name: cleanName,
+    customer_phone: cleanPhone,
+    district: cleanDistrict,
+    area_upazila: cleanUpazila,
+    full_address: cleanAddress,
+    note: cleanNote || undefined,
+    cart: validCart,
     ip,
     user_agent,
-    utm_source,
-    utm_medium,
-    utm_campaign,
-    honeypot: website_hp,
+    utm_source: sanitizeText(utm_source, 100),
+    utm_medium: sanitizeText(utm_medium, 100),
+    utm_campaign: sanitizeText(utm_campaign, 100),
+    honeypot: undefined,
   });
 
   if (!result.success) {
@@ -76,22 +238,26 @@ app.post('/api/orders', (req: Request, res: Response) => {
   });
 });
 
-app.post('/api/orders/track', (req: Request, res: Response) => {
+app.post('/api/orders/track', trackRateLimiter, (req: Request, res: Response) => {
   const { order_id, phone } = req.body;
-  if (!order_id || !phone) {
-    return res.status(400).json({ error: 'Order ID and phone number required' });
+  const cleanOrderId = sanitizeText(order_id, 30);
+  const cleanPhone = sanitizePhone(phone);
+
+  if (!cleanOrderId || !cleanPhone) {
+    return res.status(400).json({ error: 'অর্ডার আইডি এবং ফোন নম্বর প্রয়োজন' });
   }
-  const order = store.trackOrder(order_id, phone);
+
+  const order = store.trackOrder(cleanOrderId, cleanPhone);
   if (!order) {
-    return res.status(404).json({ error: 'Order not found with provided ID and phone' });
+    return res.status(404).json({ error: 'এই তথ্যে কোনো অর্ডার পাওয়া যায়নি।' });
   }
   res.json({ order });
 });
 
 app.post('/api/faqs/view', (req: Request, res: Response) => {
   const { faq_id } = req.body;
-  if (faq_id) {
-    store.incrementFAQView(faq_id);
+  if (faq_id && typeof faq_id === 'string') {
+    store.incrementFAQView(sanitizeText(faq_id, 50));
   }
   res.json({ success: true });
 });
@@ -172,8 +338,10 @@ function analyzeFragrancePreference(preference: string = '', mood: string = '', 
 }
 
 // AI Fragrance Sommelier / Scent Advisor
-app.post('/api/ai/scent-advisor', async (req: Request, res: Response) => {
-  const { preference, mood, occasion } = req.body;
+app.post('/api/ai/scent-advisor', aiRateLimiter, async (req: Request, res: Response) => {
+  const preference = sanitizeText(req.body.preference, 200);
+  const mood = sanitizeText(req.body.mood, 100);
+  const occasion = sanitizeText(req.body.occasion, 100);
 
   try {
     const prompt = `You are a Bangladeshi Attar & Perfume Sommelier at "Ator Mela" (আতর মেলা).
@@ -257,9 +425,11 @@ Output JSON strictly matching response schema with recommended_product_id set to
 });
 
 // Neutral AI Chatbot Assistant endpoint
-app.post('/api/ai/chatbot', async (req: Request, res: Response) => {
-  const { query, lang } = req.body;
-  if (!query || typeof query !== 'string') {
+app.post('/api/ai/chatbot', aiRateLimiter, async (req: Request, res: Response) => {
+  const query = sanitizeText(req.body.query, 300);
+  const lang = req.body.lang === 'en' ? 'en' : 'bn';
+
+  if (!query) {
     return res.status(400).json({ error: 'Query text is required' });
   }
 
@@ -275,7 +445,7 @@ Store Knowledge:
 - Delivery: 30 BDT flat delivery charge (FREE delivery on 10 mL or more). Currently delivering in Rajshahi and Chapai Nawabganj. Payment is Cash on Delivery.
 
 User Inquiry: "${query}"
-Language: "${lang === 'en' ? 'en' : 'bn'}"
+Language: "${lang}"
 
 Guidelines:
 1. Provide a completely neutral, objective, and factual response in the requested language.
@@ -318,24 +488,63 @@ Respond strictly with JSON matching this structure:
   }
 });
 
-// Admin Auth Middleware
-const checkAdminAuth = (req: Request, res: Response, next: () => void) => {
-  const adminEmail = (req.headers['x-admin-email'] as string) || '';
-  const settings = store.getSettings();
-  if (!adminEmail || !settings.admin_emails.includes(adminEmail.toLowerCase().trim())) {
-    return res.status(403).json({ error: 'Unauthorized: Admin access required' });
+// Admin Auth Middleware with Cryptographic Session Token Verification
+const checkAdminAuth = (req: Request, res: Response, next: NextFunction) => {
+  const token =
+    (req.headers['x-admin-token'] as string) ||
+    (req.query.token as string) ||
+    (req.headers['authorization']?.startsWith('Bearer ')
+      ? req.headers['authorization'].slice(7)
+      : '');
+
+  if (!token) {
+    return res.status(401).json({ error: 'নিরাপত্তা টোকেন অনুপস্থিত (Unauthorized)' });
   }
+
+  const session = adminSessions.get(token);
+  if (!session || session.expiresAt < Date.now()) {
+    if (session) adminSessions.delete(token);
+    return res.status(401).json({ error: 'এডমিন সেশন মেয়াদোত্তীর্ণ বা অবৈধ। দয়া করে পুনরায় লগইন করুন।' });
+  }
+
+  // Refresh expiration on activity (sliding 12 hours)
+  session.expiresAt = Date.now() + 12 * 60 * 60 * 1000;
+  (req as any).adminEmail = session.email;
   next();
 };
 
-app.post('/api/admin/login', (req: Request, res: Response) => {
-  const { email } = req.body;
+app.post('/api/admin/login', adminLoginLimiter, (req: Request, res: Response) => {
+  const { email, password } = req.body;
   const settings = store.getSettings();
-  if (email && settings.admin_emails.includes(email.toLowerCase().trim())) {
-    res.json({ success: true, email: email.toLowerCase().trim() });
-  } else {
-    res.status(401).json({ error: 'Email not authorized as administrator' });
+  const cleanEmail = sanitizeText(email, 100).toLowerCase().trim();
+  const cleanPass = typeof password === 'string' ? password.trim() : '';
+
+  if (!cleanEmail || !settings.admin_emails.includes(cleanEmail)) {
+    return res.status(401).json({ error: 'অননুমোদিত এডমিন ইমেইল' });
   }
+
+  if (cleanPass !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'ভুল সিক্রেট পাসওয়ার্ড / পিন' });
+  }
+
+  // Generate cryptographically secure token
+  const token = crypto.randomBytes(32).toString('hex');
+  adminSessions.set(token, {
+    email: cleanEmail,
+    expiresAt: Date.now() + 12 * 60 * 60 * 1000,
+  });
+
+  res.json({
+    success: true,
+    email: cleanEmail,
+    token,
+  });
+});
+
+app.post('/api/admin/logout', (req: Request, res: Response) => {
+  const token = (req.headers['x-admin-token'] as string) || '';
+  if (token) adminSessions.delete(token);
+  res.json({ success: true });
 });
 
 // Admin protected endpoints

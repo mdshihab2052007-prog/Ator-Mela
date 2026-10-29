@@ -49,7 +49,18 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   });
 
   const [loginInputEmail, setLoginInputEmail] = useState('faysalahmad687@gmail.com');
+  const [loginInputPassword, setLoginInputPassword] = useState('AtorMela#2026@Secure');
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
+
+  const getAdminHeaders = (): HeadersInit => {
+    const token = localStorage.getItem('ator_mela_admin_token') || '';
+    return {
+      'Content-Type': 'application/json',
+      'x-admin-token': token,
+      'x-admin-email': adminEmail,
+    };
+  };
 
   // Admin Data State
   const [orders, setOrders] = useState<Order[]>([]);
@@ -94,7 +105,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/admin/data', {
-        headers: { 'x-admin-email': adminEmail },
+        headers: getAdminHeaders(),
       });
       if (res.ok) {
         const data = await res.json();
@@ -113,8 +124,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         setSettings(data.settings || null);
         setUnanswered(data.unansweredQuestions || []);
       } else if (res.status === 403 || res.status === 401) {
-        setIsAuthenticated(false);
-        localStorage.removeItem('ator_mela_admin_auth');
+        handleLogout();
       }
     } catch (err) {
       console.error('Failed to fetch admin data:', err);
@@ -157,25 +167,41 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: loginInputEmail.trim() }),
+        body: JSON.stringify({
+          email: loginInputEmail.trim(),
+          password: loginInputPassword.trim(),
+        }),
       });
       const data = await res.json();
-      if (res.ok && data.success) {
+      if (res.ok && data.success && data.token) {
         setAdminEmail(data.email);
         setIsAuthenticated(true);
         localStorage.setItem('ator_mela_admin_email', data.email);
+        localStorage.setItem('ator_mela_admin_token', data.token);
         localStorage.setItem('ator_mela_admin_auth', 'true');
       } else {
-        setLoginError(data.error || 'এই ইমেইলটি এডমিন তালিকায় অনুমোদিত নয়।');
+        setLoginError(data.error || 'অননুমোদিত এডমিন ইমেইল বা ভুল সিক্রেট পাসওয়ার্ড।');
       }
     } catch {
       setLoginError('সার্ভারে সংযোগ দেওয়া যায়নি।');
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('ator_mela_admin_token');
+      if (token) {
+        await fetch('/api/admin/logout', {
+          method: 'POST',
+          headers: { 'x-admin-token': token },
+        });
+      }
+    } catch {
+      // safe
+    }
     setIsAuthenticated(false);
     localStorage.removeItem('ator_mela_admin_auth');
+    localStorage.removeItem('ator_mela_admin_token');
   };
 
   const updateOrderStatus = async (
@@ -186,10 +212,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     try {
       const res = await fetch('/api/admin/orders/status', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-email': adminEmail,
-        },
+        headers: getAdminHeaders(),
         body: JSON.stringify({
           order_id: orderId,
           status: newStatus,
@@ -415,6 +438,32 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               />
             </div>
 
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-gray-700">
+                  সিকিউরিটি পাসওয়ার্ড / পিন (Security Password)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-[11px] text-[#967431] hover:underline cursor-pointer"
+                >
+                  {showPassword ? 'লুকান' : 'দেখান'}
+                </button>
+              </div>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={loginInputPassword}
+                onChange={(e) => setLoginInputPassword(e.target.value)}
+                placeholder="এডমিন সিকিউরিটি পাসওয়ার্ড"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:border-[#C9A25A] focus:ring-1 focus:ring-[#C9A25A] text-sm text-gray-900 font-mono"
+              />
+              <span className="text-[10px] text-gray-500 block mt-1">
+                ডিফল্ট পাসওয়ার্ড: <code className="bg-gray-100 px-1 py-0.5 rounded text-gray-800 font-bold">AtorMela#2026@Secure</code>
+              </span>
+            </div>
+
             <button
               type="submit"
               className="w-full py-3 bg-[#120E0B] hover:bg-[#1E1814] text-[#E6C98A] font-bold rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
@@ -635,7 +684,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               {/* CSV Export Button */}
               <div className="flex gap-2">
                 <a
-                  href="/api/admin/export/orders.csv"
+                  href={`/api/admin/export/orders.csv?token=${encodeURIComponent(localStorage.getItem('ator_mela_admin_token') || '')}`}
                   download
                   className="px-3 py-2 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg flex items-center gap-1.5 transition-colors"
                 >
@@ -930,7 +979,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 onClick={async () => {
                   await fetch('/api/admin/offer', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+                    headers: getAdminHeaders(),
                     body: JSON.stringify({ offer }),
                   });
                   alert('অফার সেটিংস সেভ করা হয়েছে!');
@@ -984,7 +1033,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               onClick={async () => {
                 await fetch('/api/admin/delivery', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+                  headers: getAdminHeaders(),
                   body: JSON.stringify({ deliverySettings }),
                 });
                 alert('ডেলিভারি সেটিংস পরিবর্তন সংরক্ষিত হয়েছে!');
@@ -1086,7 +1135,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       onClick={async () => {
                         await fetch('/api/admin/reviews/moderate', {
                           method: 'POST',
-                          headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+                          headers: getAdminHeaders(),
                           body: JSON.stringify({ id: r.id, approved: !r.approved }),
                         });
                         setReviews((prev) =>
@@ -1118,7 +1167,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <p className="text-xs text-gray-500">অর্ডার কনফার্ম হলে অটোমেটিক স্টক কমে যায়।</p>
               </div>
               <a
-                href="/api/admin/export/customers.csv"
+                href={`/api/admin/export/customers.csv?token=${encodeURIComponent(localStorage.getItem('ator_mela_admin_token') || '')}`}
                 download
                 className="px-3 py-2 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg flex items-center gap-1.5"
               >
@@ -1202,7 +1251,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               onClick={async () => {
                 await fetch('/api/admin/settings', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+                  headers: getAdminHeaders(),
                   body: JSON.stringify({ settings }),
                 });
                 alert('সাইট সেটিংস সংরক্ষিত হয়েছে!');
@@ -1516,7 +1565,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 onClick={async () => {
                   await fetch('/api/admin/products', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-admin-email': adminEmail },
+                    headers: getAdminHeaders(),
                     body: JSON.stringify({ product: editingProduct }),
                   });
                   setProducts((prev) =>

@@ -12,11 +12,9 @@ import {
   ShoppingBag,
   HelpCircle,
   MessageCircle,
-  LogIn,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useApp } from '../context/AppContext.tsx';
-import { useAuth } from '../context/AuthContext.tsx';
 import { formatPrice, formatQuantity } from '../utils/formatters.ts';
 
 // Helper to convert Bengali numerals typed in phone field to English digits
@@ -51,9 +49,7 @@ export const CheckoutModal: React.FC = () => {
     settings,
   } = useApp();
 
-  const { user, userProfile, saveOrderToProfile, openAuthModal } = useAuth();
-
-  // Load saved customer info from userProfile or localStorage
+  // Load saved customer info from localStorage
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [district, setDistrict] = useState('Rajshahi');
@@ -65,26 +61,18 @@ export const CheckoutModal: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    if (userProfile) {
-      if (userProfile.displayName) setName(userProfile.displayName);
-      if (userProfile.phone) setPhone(userProfile.phone);
-      if (userProfile.district) setDistrict(userProfile.district);
-      if (userProfile.areaUpazila) setAreaUpazila(userProfile.areaUpazila);
-      if (userProfile.fullAddress) setFullAddress(userProfile.fullAddress);
-    } else {
-      const savedName = localStorage.getItem('ator_mela_customer_name');
-      const savedPhone = localStorage.getItem('ator_mela_customer_phone');
-      const savedDistrict = localStorage.getItem('ator_mela_district');
-      const savedUpazila = localStorage.getItem('ator_mela_upazila');
-      const savedAddress = localStorage.getItem('ator_mela_address');
+    const savedName = localStorage.getItem('ator_mela_customer_name');
+    const savedPhone = localStorage.getItem('ator_mela_customer_phone');
+    const savedDistrict = localStorage.getItem('ator_mela_district');
+    const savedUpazila = localStorage.getItem('ator_mela_upazila');
+    const savedAddress = localStorage.getItem('ator_mela_address');
 
-      if (savedName) setName(savedName);
-      if (savedPhone) setPhone(savedPhone);
-      if (savedDistrict) setDistrict(savedDistrict);
-      if (savedUpazila) setAreaUpazila(savedUpazila);
-      if (savedAddress) setFullAddress(savedAddress);
-    }
-  }, [userProfile, isCheckoutOpen]);
+    if (savedName) setName(savedName);
+    if (savedPhone) setPhone(savedPhone);
+    if (savedDistrict) setDistrict(savedDistrict);
+    if (savedUpazila) setAreaUpazila(savedUpazila);
+    if (savedAddress) setFullAddress(savedAddress);
+  }, [isCheckoutOpen]);
 
   // Keep localStorage in sync so accidental modal closing doesn't wipe progress
   useEffect(() => {
@@ -188,31 +176,21 @@ export const CheckoutModal: React.FC = () => {
         return;
       }
 
-      // If user is logged in, save the order into user's Firestore orders subcollection
-      if (user && data.order) {
-        try {
-          await saveOrderToProfile({
+      // Save order to local recent orders list for instant tracking without account
+      try {
+        const stored = JSON.parse(localStorage.getItem('ator_mela_my_orders') || '[]');
+        const updated = [
+          {
             id: data.order.id,
-            customerName: name.trim(),
-            customerPhone: cleanPhone,
-            district,
-            areaUpazila: areaUpazila.trim(),
-            fullAddress: fullAddress.trim(),
-            note: note.trim() || undefined,
-            items: data.order.items || [],
-            paidBottlesTotal: data.order.paid_bottles_total,
-            freeBottlesTotal: data.order.free_bottles_total,
-            totalPaidMl: data.order.total_paid_ml,
-            subtotal: data.order.subtotal,
-            deliveryFee: data.order.delivery_fee,
+            phone: cleanPhone,
             total: data.order.total,
-            paymentMethod: data.order.payment_method,
-            status: data.order.status || 'new',
-            createdAt: data.order.created_at || new Date().toISOString(),
-          });
-        } catch (err) {
-          console.error('Failed to save order to user Firestore profile:', err);
-        }
+            date: new Date().toISOString(),
+          },
+          ...stored.filter((o: any) => o.id !== data.order.id),
+        ];
+        localStorage.setItem('ator_mela_my_orders', JSON.stringify(updated.slice(0, 10)));
+      } catch {
+        // Safe fallback
       }
 
       // Order success!

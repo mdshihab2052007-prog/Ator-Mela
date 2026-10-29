@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext.tsx';
-import { AuthProvider } from './context/AuthContext.tsx';
 import { AnnouncementBar } from './components/AnnouncementBar.tsx';
 import { Header } from './components/Header.tsx';
 import { HeroSection } from './components/HeroSection.tsx';
@@ -17,7 +16,6 @@ import { CheckoutModal } from './components/CheckoutModal.tsx';
 import { OrderSuccessModal } from './components/OrderSuccessModal.tsx';
 import { OrderTrackingModal } from './components/OrderTrackingModal.tsx';
 import { ProductDetailModal } from './components/ProductDetailModal.tsx';
-import { AuthModal } from './components/AuthModal.tsx';
 import { Chatbot } from './components/Chatbot.tsx';
 import { FloatingButtons } from './components/FloatingButtons.tsx';
 import { StickyBottomCartBar } from './components/StickyBottomCartBar.tsx';
@@ -105,7 +103,6 @@ function MainStorefront() {
       <OrderSuccessModal />
       <OrderTrackingModal />
       <ProductDetailModal />
-      <AuthModal />
       <Chatbot />
       <FloatingButtons />
       <StickyBottomCartBar />
@@ -116,9 +113,7 @@ function MainStorefront() {
 export default function App() {
   return (
     <AppProvider>
-      <AuthProvider>
-        <MainStorefront />
-      </AuthProvider>
+      <MainStorefront />
     </AppProvider>
   );
 }

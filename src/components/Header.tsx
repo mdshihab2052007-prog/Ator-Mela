@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Package, User as UserIcon, Heart, Wand2 } from 'lucide-react';
+import { ShoppingBag, Package, Heart, Wand2 } from 'lucide-react';
 import { useApp } from '../context/AppContext.tsx';
-import { useAuth } from '../context/AuthContext.tsx';
 import { BrandLogo } from './BrandVisuals.tsx';
 import { toBanglaDigits } from '../utils/formatters.ts';
 
@@ -17,7 +16,6 @@ export const Header: React.FC = () => {
     setIsWishlistOpen,
     setIsAiAdvisorOpen,
   } = useApp();
-  const { user, userProfile, openAuthModal } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [badgeBounced, setBadgeBounced] = useState(false);
 
@@ -76,34 +74,14 @@ export const Header: React.FC = () => {
             </a>
           )}
 
-          {/* Account / Sign In Button */}
-          <button
-            onClick={() => openAuthModal(user ? 'profile' : 'login')}
-            className="flex items-center gap-1 text-xs text-[#A89A86] hover:text-[#E6C98A] p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-[#C9A25A]/20 hover:border-[#C9A25A]/50 bg-[#1E1814]/70 transition-all cursor-pointer"
-            title={user ? (lang === 'bn' ? 'অ্যাকাউন্ট' : 'Account') : (lang === 'bn' ? 'সাইন ইন / সাইন আপ' : 'Sign In / Sign Up')}
-          >
-            {user && user.photoURL ? (
-              <img src={user.photoURL} alt="User" className="w-4 h-4 rounded-full border border-amber-500/50" />
-            ) : (
-              <UserIcon size={15} className="text-[#C9A25A]" />
-            )}
-            <span className="hidden sm:inline font-medium">
-              {user
-                ? userProfile?.displayName?.split(' ')[0] || (lang === 'bn' ? 'অ্যাকাউন্ট' : 'Account')
-                : lang === 'bn'
-                ? 'লগইন'
-                : 'Sign In'}
-            </span>
-          </button>
-
-          {/* Track Order button (hidden on mobile, available in footer) */}
+          {/* Track Order button (direct tracking without login) */}
           <button
             onClick={() => setIsTrackingOpen(true)}
-            className="hidden md:flex items-center gap-1.5 text-xs text-[#A89A86] hover:text-[#E6C98A] px-2.5 py-1.5 rounded-lg border border-transparent hover:border-[#C9A25A]/30 transition-all cursor-pointer"
+            className="flex items-center gap-1 sm:gap-1.5 text-xs text-[#E6C98A] hover:text-[#FFF] p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-[#C9A25A]/30 hover:border-[#C9A25A] bg-[#1E1814]/80 transition-all cursor-pointer"
             title={lang === 'bn' ? 'অর্ডার ট্র্যাক করুন' : 'Track Order'}
           >
             <Package size={15} className="text-[#C9A25A]" />
-            <span className="font-medium">
+            <span className="hidden sm:inline font-medium">
               {lang === 'bn' ? 'অর্ডার ট্র্যাক' : 'Track Order'}
             </span>
           </button>

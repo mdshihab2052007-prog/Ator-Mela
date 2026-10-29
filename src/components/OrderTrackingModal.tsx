@@ -12,12 +12,27 @@ export const OrderTrackingModal: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [recentOrders, setRecentOrders] = useState<{ id: string; phone: string; total?: number }[]>([]);
 
   useEffect(() => {
-    if (isTrackingOpen && lastCreatedOrder) {
-      setOrderId(lastCreatedOrder.id);
-      setPhone(lastCreatedOrder.customer_phone);
-      setOrder(lastCreatedOrder);
+    if (isTrackingOpen) {
+      if (lastCreatedOrder) {
+        setOrderId(lastCreatedOrder.id);
+        setPhone(lastCreatedOrder.customer_phone);
+        setOrder(lastCreatedOrder);
+      } else {
+        const savedPhone = localStorage.getItem('ator_mela_customer_phone') || '';
+        if (savedPhone) setPhone(savedPhone);
+      }
+
+      try {
+        const stored = JSON.parse(localStorage.getItem('ator_mela_my_orders') || '[]');
+        if (Array.isArray(stored)) {
+          setRecentOrders(stored);
+        }
+      } catch {
+        // safe fallback
+      }
     }
   }, [isTrackingOpen, lastCreatedOrder]);
 
@@ -138,12 +153,36 @@ export const OrderTrackingModal: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2.5 bg-[#C9A25A] hover:bg-[#E6C98A] text-[#120E0B] font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-[#C9A25A] hover:bg-[#E6C98A] text-[#120E0B] font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
           >
             {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
             <span>{lang === 'bn' ? 'অবস্থা দেখুন' : 'Track Status'}</span>
           </button>
         </form>
+
+        {/* Recent orders quick chips */}
+        {recentOrders.length > 0 && !order && (
+          <div className="mt-3.5 pt-3 border-t border-[#C9A25A]/15 text-xs text-left">
+            <span className="text-[#A89A86] text-[11px] block mb-1.5 font-medium">
+              {lang === 'bn' ? 'সম্প্রতি দেওয়া অর্ডারসমূহ (১-ট্যাপে চেক করুন):' : 'Recent orders on this device:'}
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {recentOrders.slice(0, 3).map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    setOrderId(item.id);
+                    if (item.phone) setPhone(item.phone);
+                  }}
+                  className="px-2.5 py-1 bg-[#1E1814] hover:bg-[#2A2016] border border-[#C9A25A]/30 hover:border-[#C9A25A] text-[#E6C98A] rounded-lg text-xs font-manrope font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>{item.id}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Order Details & Timeline if found */}
         {order && (
